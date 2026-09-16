@@ -4,8 +4,18 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import 'frb_generated.dart';
+import 'model/summary.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-/// Proof of concept: returns a status string that Flutter displays on screen.
+/// M0 proof of concept, kept working verbatim: returns a status string that Flutter
+/// displays on screen.
 String getKernelStatus() => RustLib.instance.api.crateApiGetKernelStatus();
+
+/// Creates an empty engineering model in Rust and returns its summary.
+///
+/// The model is created (and dropped) inside the kernel: this call exists so the app
+/// can prove that the model core is reachable through the bridge, not to move model
+/// data into Flutter.
+ModelSummary createEmptyModel() =>
+    RustLib.instance.api.crateApiCreateEmptyModel();

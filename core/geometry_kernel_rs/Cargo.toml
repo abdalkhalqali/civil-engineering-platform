@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib", "staticlib"]
+# cdylib/staticlib: the artifacts Flutter (cargokit) links against.
+# rlib: lets `cargo test` build the integration test suite against the public API.
+crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
 # Bridge to Flutter (flutter_rust_bridge v2).
