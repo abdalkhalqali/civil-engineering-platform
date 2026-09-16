@@ -164,9 +164,18 @@ set once at creation; `touch()` updates `modified_at`.
 `EngineeringModel::project_id`. This eliminates the risk of two disagreeing
 UUIDs for the same project.
 
+## Geometry kernel evaluation
+
+A comprehensive evaluation of geometry kernel candidates (OpenCascade/cadrum,
+Truck/monstertruck, custom kernel) is documented in
+[`GEOMETRY_KERNEL_EVALUATION.md`](./GEOMETRY_KERNEL_EVALUATION.md). The key
+architectural decision is a **Kernel Adapter trait** that isolates the
+engineering model from any concrete kernel, allowing the kernel to be swapped
+without rewriting model code.
+
 ## Explicitly out of scope in this step
 
-3D rendering, Three.js/WebGPU, OpenCascade, CAD geometry, meshes, solids, booleans, BIM
+3D rendering, Three.js/WebGPU, CAD geometry, meshes, solids, booleans, BIM
 UI, structural analysis and solvers, AI, backend, cloud, database servers, SQLite,
 PostgreSQL, migrations, lazy loading, and any engineering logic in Flutter. They
 arrive as separate steps on top of this model.
