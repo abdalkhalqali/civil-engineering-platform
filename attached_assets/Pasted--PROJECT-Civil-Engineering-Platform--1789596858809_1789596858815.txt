@@ -1,0 +1,1935 @@
+المواصفات المرجعية الكاملة لمنصة الهندسة المدنية الاحترافية
+
+PROJECT: Civil Engineering Platform
+
+المشروع عبارة عن منصة هندسية احترافية متعددة المنصات تهدف على المدى الطويل إلى بناء نظام متكامل للهندسة المدنية وCAD/BIM والتحليل الإنشائي، يعمل على:
+
+- Web
+- Android
+- iOS
+- مستقبلًا Desktop عند الحاجة
+
+المشروع ليس Prototype بسيطًا، وليس مجرد 3D Viewer.
+
+الهدف النهائي هو بناء منصة هندسية يمكن توسيعها تدريجيًا لتشمل:
+
+- CAD
+- BIM
+- Parametric 3D Modeling
+- Structural Analysis
+- Reinforced Concrete Design
+- Steel Design
+- Foundation Design
+- Surveying
+- Terrain
+- Road Design
+- Quantity Takeoff
+- BOQ
+- Engineering Reports
+- IFC
+- AI Engineering Assistant
+- Cloud Collaboration
+
+لكن هذه المزايا لا يجب أن تُنفذ كلها دفعة واحدة.
+
+المشروع مبني على مراحل هندسية واضحة، وكل مرحلة يجب أن تحافظ على استقرار المراحل السابقة.
+
+---
+
+1. GOLDEN ARCHITECTURAL PRINCIPLE
+
+المبدأ الأساسي للمشروع:
+
+Engineering Model First
+
+نموذج الهندسة هو:
+
+Single Source of Truth
+
+ويجب أن يكون هو المصدر الذي تُشتق منه جميع المخرجات المستقبلية.
+
+المسار الأساسي:
+
+Engineering Model
+        ↓
+Parametric Geometry
+        ↓
+Geometry Kernel
+        ↓
+Analytical Model
+        ↓
+Engineering Solvers
+        ↓
+Design Results
+        ↓
+Quantities / BOQ / Reports / IFC / AI
+
+والـ 3D Rendering ليس مصدر الحقيقة.
+
+والـ Mesh ليس مصدر الحقيقة.
+
+والـ Database ليست مصدر الحقيقة.
+
+والـ UI ليست مصدر الحقيقة.
+
+---
+
+2. TARGET ARCHITECTURE
+
+البنية المستهدفة:
+
+Flutter UI
+    ↓
+Presentation / View Models
+    ↓
+Commands / API
+    ↓
+Engineering Model
+    ↓
+Parametric Geometry
+    ↓
+Geometry Kernel
+    ↓
+Analytical Model
+    ↓
+Engineering Solvers
+
+ومستقبلًا:
+
+                    ┌── Rendering
+                    │
+Engineering Model ──┼── Analytical Model
+                    │
+                    ├── Quantities
+                    │
+                    ├── BOQ
+                    │
+                    ├── Reports
+                    │
+                    ├── IFC/BIM
+                    │
+                    └── AI
+
+---
+
+3. TECHNOLOGY STACK
+
+UI
+
+Flutter / Dart
+
+يدعم:
+
+- Android
+- iOS
+- Web
+
+اللغة الأساسية:
+
+Arabic
+
+مع دعم مستقبلي:
+
+English
+
+ويجب أن تكون البنية قابلة لدعم:
+
+- RTL
+- LTR
+
+---
+
+4. ENGINEERING CORE
+
+الـ Core الأساسي مكتوب بـ:
+
+Rust
+
+ويجب أن يحتوي مستقبلًا على:
+
+- Engineering Model
+- Math
+- Units
+- Geometry
+- Commands
+- Validation
+- Project Persistence
+- Analytical Model
+- Structural Engineering
+- Quantities
+- Engineering Solvers
+
+---
+
+5. FLUTTER ↔ RUST
+
+يستخدم المشروع:
+
+flutter_rust_bridge
+
+والنسخة الحالية التي تم اختبارها:
+
+flutter_rust_bridge 2.13.0
+
+ممنوع تعديل الملفات المولدة يدويًا.
+
+أي generated FRB files يجب إعادة توليدها بواسطة أدوات FRB.
+
+---
+
+6. CURRENT REPOSITORY STRUCTURE
+
+البنية المستهدفة:
+
+civil-engineering-platform/
+│
+├── apps/
+│   ├── client_flutter/
+│   └── backend_api/
+│
+├── core/
+│   └── geometry_kernel_rs/
+│       ├── src/
+│       │   ├── math/
+│       │   ├── commands/
+│       │   ├── elements/
+│       │   ├── model/
+│       │   ├── project/
+│       │   ├── geometry/
+│       │   └── api/
+│       │
+│       └── Cargo.toml
+│
+├── packages/
+│   ├── rendering_web/
+│   ├── rendering_mobile/
+│   └── format_civilx/
+│
+├── engineering/
+│   ├── structural/
+│   ├── materials/
+│   ├── loads/
+│   ├── analysis/
+│   └── quantities/
+│
+├── docs/
+│
+├── tests/
+│
+└── .github/
+    └── workflows/
+
+إذا كانت بعض هذه المجلدات لم تُنشأ بعد، فهذا طبيعي.
+
+لا تنشئها لمجرد المطابقة.
+
+المراحل الحالية لا تزال مبكرة.
+
+---
+
+7. ENGINEERING MODEL
+
+النموذج الهندسي الحالي يحتوي على:
+
+EngineeringModel
+
+ويحتوي على:
+
+schema_version
+project_id
+revision
+levels
+grids
+materials
+cross_sections
+elements
+validation_mode
+
+ويستخدم:
+
+MODEL_SCHEMA_VERSION = 1
+
+---
+
+8. ENGINEERING MODEL IDENTITY
+
+كل مشروع له:
+
+project_id
+
+وهو UUID مستقر.
+
+وهذا الـ ID يجب أن يكون متطابقًا بين:
+
+Project
+EngineeringModel
+.civilx
+
+ولا يجوز إنشاء هويات متضاربة لنفس المشروع.
+
+---
+
+9. REVISION
+
+النموذج لديه:
+
+revision: u64
+
+القواعد:
+
+- إنشاء نموذج جديد → revision = 0
+- mutation ناجح → revision + 1
+- mutation مرفوض → revision لا يتغير
+- serialization → لا يغير revision
+- deserialization → يحافظ على revision
+
+هذه القاعدة مهمة مستقبلًا لـ:
+
+- Undo/Redo
+- History
+- Cache invalidation
+- Collaboration
+- Incremental geometry rebuild
+
+---
+
+10. ELEMENTS
+
+العناصر الحالية:
+
+Column
+Beam
+Slab
+Wall
+Foundation
+
+وهي داخل:
+
+Element
+
+بصيغة enum مغلقة حاليًا.
+
+لا تضف أنواعًا كثيرة الآن بدون مرحلة مستقلة.
+
+الأنواع المستقبلية قد تشمل:
+
+- Stair
+- Opening
+- Roof
+- Pile
+- RetainingWall
+- Bridge
+- Road
+- Terrain
+- SurveyPoint
+- Alignment
+- MEP
+- Steel elements
+
+لكنها Future Scope.
+
+---
+
+11. COLUMN
+
+StructuralColumn يحتوي على بيانات parametric مثل:
+
+- Base Level
+- Top Level
+- Base Offset
+- Top Offset
+- Cross Section
+- Material
+- Transform
+
+الهندسة المستقبلية للعمود يجب أن تُشتق من هذه البيانات.
+
+لا يجب تخزين Mesh داخل Column.
+
+ولا يجب تخزين OCCT Shape داخل Column.
+
+---
+
+12. BEAM
+
+StructuralBeam يحتوي على:
+
+- Reference Level
+- Start Point
+- End Point
+- Cross Section
+- Material
+- Z Justification
+- Transform
+
+وطوله واتجاهه خصائص مشتقة.
+
+---
+
+13. SLAB
+
+StructuralSlab يحتوي على:
+
+- Level
+- Thickness
+- Material
+- PlanBoundary
+
+والـ boundary الحالية هي abstraction مؤقتة.
+
+---
+
+14. WALL
+
+StructuralWall يحتوي على:
+
+- Base Level
+- Top Level
+- Start
+- End
+- Thickness
+- Material
+
+---
+
+15. FOUNDATION
+
+Foundation يحتوي على:
+
+- Level
+- Thickness
+- Material
+- Type
+- Footprint
+
+الأنواع الحالية:
+
+Isolated
+Strip
+Mat
+PileCap
+
+---
+
+16. LEVEL
+
+Level يحتوي على:
+
+- id
+- name
+- elevation
+
+---
+
+17. GRID
+
+Grid يحتوي على:
+
+- id
+- name
+- direction
+- offset
+
+---
+
+18. MATERIAL
+
+Material جزء من Engineering Model.
+
+يجب أن يبقى Material Domain Data.
+
+ولا يجب ربطه مباشرة بالـ Renderer.
+
+---
+
+19. CROSS SECTION
+
+CrossSection يدعم حاليًا:
+
+Rectangular
+Circular
+IBeam
+
+والخصائص الهندسية مثل:
+
+- Area
+- Moment of Inertia
+- Depth
+- Width
+
+يجب أن تكون Derived Properties.
+
+لا تخزن القيم المشتقة إذا كان بالإمكان حسابها بأمان من المصدر.
+
+---
+
+20. UNITS
+
+الوحدات الداخلية canonical units:
+
+Length          meter
+Area            square meter
+Second Moment   m⁴
+Force           Newton
+Mass            kilogram
+Density         kg/m³
+Angle           radian
+Stress          Pascal
+
+مثال:
+
+400 mm = 0.4 m
+
+يُخزن:
+
+0.4
+
+ولا يجب تخزين:
+
+"400 mm"
+
+داخل الـ domain object.
+
+واجهة المستخدم تستطيع عرض:
+
+- mm
+- cm
+- m
+- in
+- ft
+- N
+- kN
+- Pa
+- kPa
+- MPa
+- GPa
+
+---
+
+21. COORDINATE SYSTEM
+
+النظام الداخلي:
+
+X = horizontal
+Y = horizontal perpendicular
+Z = vertical
+
+Z هو الاتجاه الرأسي.
+
+Rotation الحالية تعتمد على:
+
+AroundZ
+
+ولا يوجد scale داخل Transform3D.
+
+---
+
+22. MATH
+
+يوجد حاليًا:
+
+Point3D
+Vector3D
+Transform3D
+Rotation3D
+
+وتوجد عمليات مثل:
+
+- distance
+- offset
+- translation
+- normalization
+- scaling vectors
+- rotation around Z
+
+ويجب عدم إدخال engineering calculations في Flutter.
+
+---
+
+23. VALIDATION
+
+Validation موجود في Rust.
+
+الوضع الافتراضي:
+
+Strict
+
+وهناك:
+
+Permissive
+
+لـ repair/load workflows المستقبلية.
+
+يجب عدم تنفيذ silent repair.
+
+يجب أن تكون validation errors واضحة.
+
+الحالات الحالية تشمل:
+
+DuplicateId
+IdMismatch
+CategoryMismatch
+MissingReference
+InvalidDimension
+InvalidLevelOrder
+InvalidBoundary
+InvalidCrossSection
+NegativeValue
+UnsupportedSchemaVersion
+
+---
+
+24. DETERMINISM
+
+يجب الحفاظ على deterministic serialization قدر الإمكان.
+
+يتم استخدام:
+
+BTreeMap
+
+لتحقيق ترتيب مستقر.
+
+الـ UUIDs يجب أن تكون مستقرة.
+
+والـ serialized domain model يجب أن يكون reproducible.
+
+---
+
+25. COMMAND ARCHITECTURE
+
+يوجد:
+
+ModelCommand
+
+والفكرة:
+
+Command
+    ↓
+Validation
+    ↓
+Model Mutation
+    ↓
+revision++
+
+حاليًا يوجد مثال:
+
+AddLevelCommand
+
+هذه بداية وليست Event Sourcing كاملًا.
+
+Future:
+
+- Undo
+- Redo
+- Event Journal
+- Audit
+- Collaboration
+- Sync
+
+لكن لا تفترض أنها منفذة حاليًا.
+
+---
+
+26. PROJECT PERSISTENCE
+
+تم تنفيذ Project Persistence.
+
+يوجد:
+
+Project
+ProjectMetadata
+ProjectSummary
+ProjectSerializer
+ProjectFormatV1
+FileHeader
+
+و:
+
+PROJECT_FORMAT_VERSION = 1
+
+---
+
+27. CIVILX
+
+امتداد المشروع:
+
+.civilx
+
+الصيغة الحالية:
+
+header
+metadata
+model
+
+بصيغة newline-delimited JSON.
+
+أي:
+
+header \n metadata \n model
+
+والصيغة versioned.
+
+---
+
+28. PROJECT FORMAT VS MODEL SCHEMA
+
+يجب الحفاظ على الفصل بين:
+
+PROJECT_FORMAT_VERSION
+
+و:
+
+MODEL_SCHEMA_VERSION
+
+هما شيئان مختلفان ويمكن تطويرهما بشكل مستقل.
+
+---
+
+29. PROJECT VALIDATION
+
+عند تحميل project يجب التحقق من:
+
+- Header
+- UTF-8
+- Format Version
+- Schema Version
+- Project ID consistency
+- Model validation
+
+ولا يوجد:
+
+silent repair
+
+ولا يجب استخدام:
+
+unwrap()
+
+في parsing paths الإنتاجية.
+
+---
+
+30. PROJECT SIZE
+
+الحجم الأقصى الحالي:
+
+100 MiB
+
+---
+
+31. PROJECT METADATA
+
+Metadata مثل:
+
+- name
+- created_at
+- modified_at
+
+ليست Engineering Domain State.
+
+والـ timestamps ليست deterministic، وهذا مقصود.
+
+---
+
+32. GEOMETRY ARCHITECTURE
+
+حتى الآن لا يجب اعتبار Geometry كاملة التنفيذ.
+
+المرحلة الحالية هي بناء Geometry Kernel architecture.
+
+المبدأ:
+
+Engineering Model
+        ↓
+Parametric Geometry Service
+        ↓
+GeometryKernel trait
+        ↓
+Kernel Adapter
+        ↓
+Actual Geometry Kernel
+
+---
+
+33. GEOMETRY KERNEL DECISION
+
+تم تقييم:
+
+- OpenCascade / Cadrum
+- Truck / MonsterTruck
+- Custom Kernel
+- Parry3D
+- nalgebra + custom
+
+القرار المعماري المبدئي:
+
+Primary Candidate
+
+Cadrum + OpenCascade
+
+Alternative
+
+Truck / MonsterTruck
+
+لكن لا تعتبر Cadrum integration مكتملة حتى يتم تنفيذها واختبارها فعليًا.
+
+---
+
+34. CADRUM
+
+تم التحقق مبدئيًا من:
+
+cadrum 0.8.20
+OCCT 8.0.1
+
+وفق الاختبار السابق:
+
+- Cadrum package موجود
+- API مبدئيًا يدعم Solid operations
+- prebuilt native binary متوفر للبيئة المختبرة
+- لا يحتاج C++ toolchain للـ prebuilt native path
+
+لكن:
+
+IMPORTANT
+
+لم يتم دمج Cadrum فعليًا داخل المشروع الرئيسي حتى الآن.
+
+كانت STEP 4B السابقة:
+
+BLOCKED
+
+بسبب disk space.
+
+لذلك لا تدّعِ أن Geometry Kernel integration مكتملة.
+
+---
+
+35. CURRENT GEOMETRY STATUS
+
+الحالة الصحيحة حاليًا:
+
+No production Geometry Kernel integration
+No production solids
+No production meshes
+No rendering
+No 3D viewport
+
+PlanBoundary الحالية:
+
+temporary abstraction
+
+ويجب الحفاظ عليها مؤقتًا.
+
+---
+
+36. GEOMETRY SOURCE OF TRUTH
+
+في المستقبل:
+
+Column Parameters
+       ↓
+Parametric Geometry
+       ↓
+Solid
+       ↓
+Tessellation
+       ↓
+Mesh
+
+لكن:
+
+Mesh ≠ Engineering Truth
+
+و:
+
+Solid ≠ persisted domain truth
+
+الـ Engineering Parameters هي المصدر.
+
+---
+
+37. GEOMETRY CACHE
+
+التصميم المستقبلي:
+
+Parameters
+    ↓
+Solid Cache
+    ↓
+Mesh Cache
+    ↓
+Spatial Index
+
+ويجب أن تكون caches قابلة لإعادة البناء.
+
+---
+
+38. INCREMENTAL GEOMETRY
+
+عند تعديل عنصر واحد:
+
+لا نريد إعادة بناء كامل المشروع.
+
+المسار المستقبلي:
+
+Element changed
+      ↓
+Invalidate geometry cache
+      ↓
+Regenerate element geometry
+      ↓
+Retessellate
+      ↓
+Update viewport
+
+---
+
+39. RENDERING
+
+لم يتم اختيار Rendering Engine نهائيًا بعد.
+
+لا تعتبر:
+
+- Three.js
+- WebGPU
+- WebGL
+- Filament
+
+جزءًا من Geometry Kernel.
+
+Rendering قرار مستقل لاحق.
+
+---
+
+40. 3D VIEWPORT
+
+غير منفذ حاليًا.
+
+ولا يجب إضافته قبل أن تكون Geometry architecture مستقرة.
+
+---
+
+41. ANALYTICAL MODEL
+
+مستقبلي.
+
+يجب أن يكون منفصلًا عن Physical Model.
+
+Physical Model
+       ↓
+Analytical Model
+       ↓
+Structural Solver
+
+لا تخلط بينهما.
+
+---
+
+42. STRUCTURAL ANALYSIS
+
+Future Scope:
+
+- Loads
+- Supports
+- Combinations
+- Nodes
+- Members
+- Matrices
+- Solver
+- Results
+
+لكن لا توجد حاليًا نتائج تحليل إنشائي حقيقية.
+
+ممنوع fake engineering results.
+
+---
+
+43. DESIGN
+
+Future:
+
+- RC Design
+- Steel Design
+- Foundation Design
+
+كل نتيجة تصميم يجب مستقبلًا أن تكون:
+
+- traceable
+- reproducible
+- documented
+- linked to standard
+- linked to assumptions
+- linked to solver version
+
+---
+
+44. QUANTITIES
+
+Future:
+
+Engineering Model
+      ↓
+Geometry
+      ↓
+Quantity Takeoff
+      ↓
+BOQ
+
+---
+
+45. BIM / IFC
+
+Future.
+
+لا تعتبر IFC implemented حاليًا.
+
+الهدف المستقبلي:
+
+- IFC import
+- IFC export
+- BIM mapping
+- property sets
+- relationships
+
+---
+
+46. SURVEYING / TERRAIN / ROADS
+
+Future Scope:
+
+- Survey Points
+- Terrain
+- TIN
+- Alignments
+- Profiles
+- Corridors
+- Road Design
+
+لا تنفذ الآن.
+
+---
+
+47. AI ENGINEERING ASSISTANT
+
+Future architecture:
+
+User
+ ↓
+AI
+ ↓
+Intent
+ ↓
+Validated Command
+ ↓
+Engineering Model
+ ↓
+Geometry / Analysis
+
+ممنوع أن يكون AI قادرًا مستقبلًا على الكتابة مباشرة إلى database أو raw geometry بدون validation/commands.
+
+---
+
+48. CLOUD
+
+Future:
+
+- Backend API
+- PostgreSQL
+- PostGIS
+- Object Storage
+- Authentication
+- Collaboration
+- Versioning
+- Sync
+
+لكن المشروع الحالي Local-first.
+
+---
+
+49. OFFLINE-FIRST
+
+يجب أن يكون Core قادرًا على العمل محليًا.
+
+Cloud يجب أن تكون إضافة مستقبلية وليست شرطًا لعمل Engineering Model.
+
+---
+
+50. DATABASE
+
+Database ليست Engineering Source of Truth.
+
+هي Storage Layer فقط.
+
+Domain Model يجب أن يبقى مستقلًا عن نوع قاعدة البيانات.
+
+---
+
+51. SECURITY
+
+يجب عدم:
+
+- hardcode secrets
+- hardcode API keys
+- وضع credentials داخل source
+- السماح للـ AI بتجاوز validation
+
+---
+
+52. ERROR HANDLING
+
+لا تستخدم:
+
+unwrap()
+expect()
+
+في production paths عندما يمكن التعامل مع الخطأ.
+
+استخدم typed errors.
+
+---
+
+53. DEPENDENCY DISCIPLINE
+
+لا تضف dependency لمجرد convenience.
+
+قبل إضافة أي dependency مهمة:
+
+تحقق من:
+
+- License
+- Maintenance
+- API stability
+- Rust compatibility
+- Flutter compatibility
+- Android
+- iOS
+- Web/WASM
+- Performance
+- Binary size
+- Build complexity
+
+---
+
+54. TESTING
+
+كل مرحلة يجب أن تحافظ على اختبارات المراحل السابقة.
+
+الحد الأدنى:
+
+cargo fmt
+cargo check --all-targets
+cargo test
+flutter pub get
+flutter analyze
+flutter test
+
+إذا كانت بيئة الاختبار لا تسمح باختبار Android/iOS:
+
+لا تدّعي نجاحها.
+
+اكتب:
+
+NOT TESTED — REASON
+
+---
+
+55. CURRENT VERIFIED STATE
+
+الحالة التي يجب مطابقتها مع repository:
+
+Rust
+
+Rust 1.98.1
+
+Flutter
+
+Flutter 3.47.4 stable
+
+Dart
+
+Dart 3.13.3
+
+flutter_rust_bridge
+
+2.13.0
+
+---
+
+56. PREVIOUS TEST STATE
+
+قبل محاولة Cadrum:
+
+cargo check --all-targets: PASS
+cargo test: PASS
+cargo fmt: PASS
+
+flutter pub get: PASS
+flutter analyze: PASS
+flutter test: PASS
+
+flutter build web: PASS
+
+Android:
+
+NOT TESTED
+
+بسبب عدم وجود JDK/Android SDK في البيئة السابقة.
+
+iOS:
+
+NOT TESTED
+
+بسبب عدم وجود macOS/Xcode.
+
+Web runtime:
+
+يجب التفريق بين:
+
+Web build success
+
+و:
+
+Browser runtime tested
+
+---
+
+57. CURRENT GIT STATE
+
+آخر المراحل الناجحة التي يجب أن تكون موجودة:
+
+Step 2:
+
+14ba4bb feat: build engineering model core
+
+ثم Step 3:
+
+b7d3eb3 feat: establish project persistence foundation
+
+ثم Step 4A:
+
+9f188e7 docs: geometry kernel architectural evaluation
+
+الـ GitHub remote يجب أن يحتوي على التغييرات الناجحة حتى Step 4A.
+
+STEP 4B لم ينتج commit لأن التنفيذ كان BLOCKED قبل تعديل المشروع.
+
+---
+
+58. ROADMAP
+
+الترتيب العام:
+
+STEP 1
+
+Architecture + Repository + Development Foundation
+
+STEP 2
+
+Rust Engineering Kernel + Flutter Bridge + Engineering Model
+
+STEP 3
+
+Project Persistence Foundation
+
+STEP 4A
+
+Geometry Kernel Evaluation
+
+STEP 4B
+
+Geometry Kernel Adapter + Actual Kernel Integration
+
+STEP 4C
+
+Parametric Geometry
+
+STEP 5
+
+3D Rendering + Professional Viewport
+
+STEP 6
+
+Commands + Selection + Snap + Editing + 2D
+
+STEP 7
+
+Structural Engineering Model + Loads + Materials
+
+STEP 8
+
+Analytical Model + Structural Analysis
+
+STEP 9
+
+Design + Quantities + BOQ + Reports
+
+STEP 10
+
+BIM + IFC + Surveying + Terrain + Roads
+
+STEP 11
+
+AI Engineering Assistant
+
+STEP 12
+
+Cloud + Collaboration + Production
+
+---
+
+59. CRITICAL RULE — DO NOT SKIP STAGES
+
+لا تقفز مباشرة إلى:
+
+- 3D Viewer
+- Rendering
+- Structural Solver
+- AI
+- IFC
+- Cloud
+
+إذا كانت foundation غير مستقرة.
+
+كل مرحلة يجب أن تبني على السابقة.
+
+---
+
+60. CURRENT TASK FOR REPLIT ASSISTANT
+
+أنت الآن مسؤول عن:
+
+PROJECT AUDIT ONLY
+
+لا تبدأ بإعادة بناء المشروع.
+
+لا تغير architecture.
+
+لا تضف features.
+
+لا تحدث dependencies.
+
+لا تثبت Cadrum.
+
+لا تحذف ملفات.
+
+لا تعيد كتابة الملفات.
+
+لا تعمل refactor واسع.
+
+---
+
+61. WHAT I WANT YOU TO DO
+
+افحص repository الحالي بالكامل، ثم قارنه بهذه المواصفات.
+
+افحص:
+
+Repository
+Rust
+Flutter
+FRB
+Engineering Model
+Math
+Units
+Elements
+Validation
+Commands
+Project
+Serialization
+Documentation
+Tests
+Git
+
+ثم أنشئ تقرير مطابقة.
+
+---
+
+62. MATCHING CATEGORIES
+
+استخدم:
+
+MATCH
+PARTIAL
+MISSING
+DEVIATION
+NOT IMPLEMENTED
+NOT TESTED
+BLOCKED
+
+لا تستخدم:
+
+PASS
+
+لشيء لم يتم اختباره.
+
+---
+
+63. DO NOT ASSUME
+
+إذا وجدت feature في documentation ولكن لا يوجد implementation:
+
+اكتب:
+
+DOCUMENTED ONLY — NOT IMPLEMENTED
+
+إذا وجدت implementation ولكن لم يتم اختبارها:
+
+IMPLEMENTED — NOT TESTED
+
+إذا كانت المشكلة من البيئة:
+
+ENVIRONMENT BLOCKER
+
+إذا كان هناك اختلاف معماري:
+
+ARCHITECTURAL DEVIATION
+
+---
+
+64. IMPORTANT — NO FALSE POSITIVES
+
+لا تعتبر:
+
+class exists
+
+دليلًا على أن feature كاملة.
+
+ولا تعتبر:
+
+function exists
+
+دليلًا على أنها production-ready.
+
+افحص implementation الفعلية والاختبارات.
+
+---
+
+65. CHECK ARCHITECTURAL LEAKAGE
+
+ابحث خصوصًا عن:
+
+هل:
+
+model/
+elements/
+project/
+
+تعتمد مباشرة على:
+
+- rendering libraries
+- OCCT
+- Cadrum
+- Three.js
+- Flutter
+- database implementation
+
+إذا وجدت ذلك، سجله.
+
+---
+
+66. CHECK DOMAIN PURITY
+
+تأكد أن:
+
+Engineering Model
+
+لا يحتوي على:
+
+- UI state
+- rendering state
+- mesh data
+- camera
+- GPU objects
+- database handles
+- AI state
+
+---
+
+67. CHECK SERIALIZATION
+
+تأكد أن ".civilx":
+
+- deterministic
+- versioned
+- validates input
+- preserves project identity
+- preserves revision
+- does not serialize raw rendering data
+- does not depend unnecessarily on geometry kernel internals
+
+---
+
+68. CHECK FRB
+
+تأكد أن:
+
+- generated files are generated
+- Rust API is separated
+- Flutter doesn't implement engineering truth
+- no generated FRB files were manually hacked
+- bridge API remains intentionally small
+
+---
+
+69. CHECK TESTS
+
+قم بتشغيل الاختبارات المتاحة فعليًا.
+
+إذا نجحت:
+
+سجل exact command والنتيجة.
+
+إذا فشلت:
+
+سجل:
+
+- command
+- error
+- likely cause
+- whether code issue or environment issue
+
+---
+
+70. CHECK CADRUM
+
+لا تثبت Cadrum الآن.
+
+فقط تحقق من repository:
+
+هل توجد integration فعلية؟
+
+إذا لا:
+
+NOT IMPLEMENTED
+
+وهذا متوقع.
+
+STEP 4B السابقة كانت BLOCKED.
+
+---
+
+71. CHECK DOCUMENTATION
+
+طابق:
+
+README.md
+docs/ARCHITECTURE.md
+docs/ENGINEERING_MODEL.md
+docs/PROJECT_FORMAT.md
+docs/GEOMETRY_KERNEL_EVALUATION.md
+
+مع الكود الفعلي.
+
+إذا وجدت documentation لا تطابق code:
+
+سجل discrepancy.
+
+---
+
+72. DO NOT "FIX" DISCREPANCIES
+
+في هذه المرحلة لا تصلح شيئًا.
+
+فقط سجل المشكلة.
+
+إذا وجدت مشكلة حرجة تمنع البناء، لا تصلحها تلقائيًا إلا إذا كانت ضرورية جدًا لتشغيل audit.
+
+الأصل:
+
+AUDIT FIRST.
+
+---
+
+73. REQUIRED FINAL REPORT
+
+استخدم هذا الشكل:
+
+========================================
+CIVIL ENGINEERING PLATFORM
+PROJECT SPECIFICATION AUDIT
+
+AUDIT STATUS:
+PASS / PARTIAL / BLOCKED
+
+REPOSITORY:
+...
+
+BRANCH:
+...
+
+HEAD:
+...
+
+RUST:
+...
+
+FLUTTER:
+...
+
+DART:
+...
+
+FRB:
+...
+
+---
+
+ARCHITECTURE
+
+Engineering Model:
+MATCH / PARTIAL / DEVIATION
+
+UI/Core Separation:
+...
+
+Domain Purity:
+...
+
+Single Source of Truth:
+...
+
+Command Architecture:
+...
+
+---
+
+ENGINEERING MODEL
+
+Project:
+...
+
+Level:
+...
+
+Grid:
+...
+
+Material:
+...
+
+CrossSection:
+...
+
+Column:
+...
+
+Beam:
+...
+
+Slab:
+...
+
+Wall:
+...
+
+Foundation:
+...
+
+---
+
+MATH & UNITS
+
+Point3D:
+...
+
+Vector3D:
+...
+
+Transform3D:
+...
+
+Units:
+...
+
+Coordinate System:
+...
+
+---
+
+VALIDATION
+
+Strict Mode:
+...
+
+Permissive Mode:
+...
+
+Validation Codes:
+...
+
+---
+
+PROJECT PERSISTENCE
+
+.civilx:
+...
+
+Project Format:
+...
+
+Format Version:
+...
+
+Model Schema Version:
+...
+
+Round Trip:
+...
+
+Determinism:
+...
+
+Validation:
+...
+
+Revision Preservation:
+...
+
+---
+
+GEOMETRY
+
+PlanBoundary:
+...
+
+Geometry abstraction:
+...
+
+GeometryKernel trait:
+...
+
+Cadrum:
+...
+
+OCCT:
+...
+
+Parametric Geometry:
+...
+
+Solids:
+...
+
+Tessellation:
+...
+
+Mesh:
+...
+
+Rendering:
+...
+
+CURRENT STATUS:
+...
+
+---
+
+FRB
+
+Rust → Flutter:
+...
+
+Generated Code:
+...
+
+Engineering Logic in Flutter:
+...
+
+---
+
+TESTS
+
+cargo fmt:
+...
+
+cargo check:
+...
+
+cargo test:
+...
+
+flutter pub get:
+...
+
+flutter analyze:
+...
+
+flutter test:
+...
+
+flutter build web:
+...
+
+Android:
+...
+
+iOS:
+...
+
+Web runtime:
+...
+
+---
+
+DOCUMENTATION
+
+README:
+...
+
+ARCHITECTURE:
+...
+
+ENGINEERING_MODEL:
+...
+
+PROJECT_FORMAT:
+...
+
+GEOMETRY_KERNEL_EVALUATION:
+...
+
+---
+
+DEPENDENCIES
+
+New dependencies:
+...
+
+Potential concerns:
+...
+
+---
+
+ARCHITECTURAL DEVIATIONS
+
+1. 
+2. 
+3. 
+
+---
+
+MISSING FEATURES
+
+1. 
+2. 
+3. 
+
+---
+
+NOT IMPLEMENTED
+
+1. 
+2. 
+3. 
+
+---
+
+NOT TESTED
+
+1. 
+2. 
+3. 
+
+---
+
+ENVIRONMENT BLOCKERS
+
+1. 
+2. 
+3. 
+
+---
+
+CRITICAL ISSUES
+
+1. 
+2. 
+3. 
+
+---
+
+NON-CRITICAL ISSUES
+
+1. 
+2. 
+3. 
+
+---
+
+OVERALL SPECIFICATION MATCH
+
+Foundation:
+...
+
+Engineering Model:
+...
+
+Persistence:
+...
+
+Geometry:
+...
+
+Flutter:
+...
+
+Testing:
+...
+
+Architecture:
+...
+
+---
+
+RECOMMENDED NEXT ACTION
+
+اذكر خطوة واحدة فقط.
+
+لا تبدأ بتنفيذها.
+
+لا تقترح إعادة بناء المشروع بالكامل.
+
+---
+
+FILES MODIFIED
+
+يجب أن تكون:
+
+NONE
+
+لأن هذه العملية Audit فقط.
+
+---
+
+GIT
+
+Working Tree:
+...
+
+Commits:
+...
+
+Push:
+...
+
+========================================
+STOP
+
+FINAL RULE
+
+هذه الرسالة هي Specification Reference.
+
+لكن repository الحالي هو الحقيقة التنفيذية.
+
+إذا اختلفت المواصفات عن الكود:
+
+لا تخترع implementation.
+
+لا تفترض أن feature موجودة.
+
+أبلغني بالفرق.
+
+لا تعدل المشروع في هذه المرحلة.
+
+========================================
+END AUDIT
