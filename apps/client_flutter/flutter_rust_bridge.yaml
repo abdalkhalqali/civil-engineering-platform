@@ -1,0 +1,11 @@
+# Configuration for `flutter_rust_bridge_codegen` (v2).
+#
+# This file exists so the FRB code generator knows where the Rust kernel lives
+# and where the generated Dart bindings must be written. Run
+# `flutter_rust_bridge_codegen generate` from this directory to regenerate.
+#
+# Rust crate (workspace member): core/geometry_kernel_rs
+# Dart bindings output:          lib/ffi_bridge/generated
+rust_input: crate::api
+rust_root: ../../core/geometry_kernel_rs/
+dart_output: lib/ffi_bridge/generated
