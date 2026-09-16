@@ -15,6 +15,8 @@ import 'model/summary.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+import 'project.dart';
+
 /// Main entrypoint of the Rust API
 class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   @internal
@@ -70,7 +72,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1200020222;
+  int get rustContentHash => 313293748;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -83,6 +85,8 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 
 abstract class RustLibApi extends BaseApi {
   ModelSummary crateApiCreateEmptyModel();
+
+  ProjectSummary crateApiCreateProject({required String name});
 
   String crateApiGetKernelStatus();
 
@@ -120,12 +124,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "create_empty_model", argNames: []);
 
   @override
+  ProjectSummary crateApiCreateProject({required String name}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(name, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_project_summary,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiCreateProjectConstMeta,
+        argValues: [name],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiCreateProjectConstMeta =>
+      const TaskConstMeta(debugName: "create_project", argNames: ["name"]);
+
+  @override
   String crateApiGetKernelStatus() {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -150,7 +177,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 4,
             port: port_,
           );
         },
@@ -195,6 +222,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       materials: dco_decode_u_32(arr[5]),
       crossSections: dco_decode_u_32(arr[6]),
       elements: dco_decode_u_32(arr[7]),
+    );
+  }
+
+  @protected
+  ProjectSummary dco_decode_project_summary(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
+    return ProjectSummary(
+      formatVersion: dco_decode_u_32(arr[0]),
+      modelSchemaVersion: dco_decode_u_32(arr[1]),
+      projectId: dco_decode_String(arr[2]),
+      name: dco_decode_String(arr[3]),
+      revision: dco_decode_u_64(arr[4]),
+      levels: dco_decode_u_32(arr[5]),
+      grids: dco_decode_u_32(arr[6]),
+      materials: dco_decode_u_32(arr[7]),
+      crossSections: dco_decode_u_32(arr[8]),
+      elements: dco_decode_u_32(arr[9]),
     );
   }
 
@@ -260,6 +307,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ProjectSummary sse_decode_project_summary(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_formatVersion = sse_decode_u_32(deserializer);
+    var var_modelSchemaVersion = sse_decode_u_32(deserializer);
+    var var_projectId = sse_decode_String(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_revision = sse_decode_u_64(deserializer);
+    var var_levels = sse_decode_u_32(deserializer);
+    var var_grids = sse_decode_u_32(deserializer);
+    var var_materials = sse_decode_u_32(deserializer);
+    var var_crossSections = sse_decode_u_32(deserializer);
+    var var_elements = sse_decode_u_32(deserializer);
+    return ProjectSummary(
+      formatVersion: var_formatVersion,
+      modelSchemaVersion: var_modelSchemaVersion,
+      projectId: var_projectId,
+      name: var_name,
+      revision: var_revision,
+      levels: var_levels,
+      grids: var_grids,
+      materials: var_materials,
+      crossSections: var_crossSections,
+      elements: var_elements,
+    );
+  }
+
+  @protected
   int sse_decode_u_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint32();
@@ -315,6 +389,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_u_32(self.schemaVersion, serializer);
     sse_encode_String(self.projectId, serializer);
+    sse_encode_u_64(self.revision, serializer);
+    sse_encode_u_32(self.levels, serializer);
+    sse_encode_u_32(self.grids, serializer);
+    sse_encode_u_32(self.materials, serializer);
+    sse_encode_u_32(self.crossSections, serializer);
+    sse_encode_u_32(self.elements, serializer);
+  }
+
+  @protected
+  void sse_encode_project_summary(
+    ProjectSummary self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self.formatVersion, serializer);
+    sse_encode_u_32(self.modelSchemaVersion, serializer);
+    sse_encode_String(self.projectId, serializer);
+    sse_encode_String(self.name, serializer);
     sse_encode_u_64(self.revision, serializer);
     sse_encode_u_32(self.levels, serializer);
     sse_encode_u_32(self.grids, serializer);

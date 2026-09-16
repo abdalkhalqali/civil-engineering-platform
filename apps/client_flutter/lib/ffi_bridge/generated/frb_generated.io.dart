@@ -14,6 +14,8 @@ import 'model/summary.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
 
+import 'project.dart';
+
 abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   RustLibApiImplPlatform({
     required super.handler,
@@ -30,6 +32,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ModelSummary dco_decode_model_summary(dynamic raw);
+
+  @protected
+  ProjectSummary dco_decode_project_summary(dynamic raw);
 
   @protected
   int dco_decode_u_32(dynamic raw);
@@ -51,6 +56,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ModelSummary sse_decode_model_summary(SseDeserializer deserializer);
+
+  @protected
+  ProjectSummary sse_decode_project_summary(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_32(SseDeserializer deserializer);
@@ -81,6 +89,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_model_summary(ModelSummary self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_project_summary(
+    ProjectSummary self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_u_32(int self, SseSerializer serializer);

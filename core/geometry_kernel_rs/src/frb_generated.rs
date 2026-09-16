@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1200020222;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 313293748;
 
 // Section: executor
 
@@ -71,6 +71,36 @@ fn wire__crate__api__create_empty_model_impl(
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let output_ok = Ok::<_, ()>(crate::api::create_empty_model())?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__create_project_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "create_project",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_name = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::create_project(api_name))?;
                 std::result::Result::Ok(output_ok)
             })())
         },
@@ -186,6 +216,34 @@ impl SseDecode for crate::model::summary::ModelSummary {
     }
 }
 
+impl SseDecode for crate::project::ProjectSummary {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_formatVersion = <u32>::sse_decode(deserializer);
+        let mut var_modelSchemaVersion = <u32>::sse_decode(deserializer);
+        let mut var_projectId = <String>::sse_decode(deserializer);
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_revision = <u64>::sse_decode(deserializer);
+        let mut var_levels = <u32>::sse_decode(deserializer);
+        let mut var_grids = <u32>::sse_decode(deserializer);
+        let mut var_materials = <u32>::sse_decode(deserializer);
+        let mut var_crossSections = <u32>::sse_decode(deserializer);
+        let mut var_elements = <u32>::sse_decode(deserializer);
+        return crate::project::ProjectSummary {
+            format_version: var_formatVersion,
+            model_schema_version: var_modelSchemaVersion,
+            project_id: var_projectId,
+            name: var_name,
+            revision: var_revision,
+            levels: var_levels,
+            grids: var_grids,
+            materials: var_materials,
+            cross_sections: var_crossSections,
+            elements: var_elements,
+        };
+    }
+}
+
 impl SseDecode for u32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -235,7 +293,7 @@ fn pde_ffi_dispatcher_primary_impl(
 ) {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        3 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
+        4 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -249,7 +307,8 @@ fn pde_ffi_dispatcher_sync_impl(
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
         1 => wire__crate__api__create_empty_model_impl(ptr, rust_vec_len, data_len),
-        2 => wire__crate__api__get_kernel_status_impl(ptr, rust_vec_len, data_len),
+        2 => wire__crate__api__create_project_impl(ptr, rust_vec_len, data_len),
+        3 => wire__crate__api__get_kernel_status_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -283,6 +342,35 @@ impl flutter_rust_bridge::IntoIntoDart<crate::model::summary::ModelSummary>
         self
     }
 }
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::project::ProjectSummary {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.format_version.into_into_dart().into_dart(),
+            self.model_schema_version.into_into_dart().into_dart(),
+            self.project_id.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.revision.into_into_dart().into_dart(),
+            self.levels.into_into_dart().into_dart(),
+            self.grids.into_into_dart().into_dart(),
+            self.materials.into_into_dart().into_dart(),
+            self.cross_sections.into_into_dart().into_dart(),
+            self.elements.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::project::ProjectSummary
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::project::ProjectSummary>
+    for crate::project::ProjectSummary
+{
+    fn into_into_dart(self) -> crate::project::ProjectSummary {
+        self
+    }
+}
 
 impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -306,6 +394,22 @@ impl SseEncode for crate::model::summary::ModelSummary {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <u32>::sse_encode(self.schema_version, serializer);
         <String>::sse_encode(self.project_id, serializer);
+        <u64>::sse_encode(self.revision, serializer);
+        <u32>::sse_encode(self.levels, serializer);
+        <u32>::sse_encode(self.grids, serializer);
+        <u32>::sse_encode(self.materials, serializer);
+        <u32>::sse_encode(self.cross_sections, serializer);
+        <u32>::sse_encode(self.elements, serializer);
+    }
+}
+
+impl SseEncode for crate::project::ProjectSummary {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.format_version, serializer);
+        <u32>::sse_encode(self.model_schema_version, serializer);
+        <String>::sse_encode(self.project_id, serializer);
+        <String>::sse_encode(self.name, serializer);
         <u64>::sse_encode(self.revision, serializer);
         <u32>::sse_encode(self.levels, serializer);
         <u32>::sse_encode(self.grids, serializer);

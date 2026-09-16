@@ -122,15 +122,15 @@ database: those are separate, dedicated steps.
 
 ### D12 — What crosses the Rust/Flutter boundary
 
-Only `get_kernel_status()` (the M0 proof of concept, kept working) and
-`create_empty_model() -> ModelSummary`, a flat snapshot of counts. The model itself,
-its entities and every engineering rule stay in Rust; Flutter receives no model data
-it could re-interpret.
+Only `get_kernel_status()` (the M0 proof of concept, kept working),
+`create_empty_model() -> ModelSummary`, and `create_project() -> ProjectSummary`,
+flat snapshots of counts. The model itself, its entities and every engineering
+rule stay in Rust; Flutter receives no model data it could re-interpret.
 
 *Bridge rule:* `flutter_rust_bridge` addresses mirrored types at their **defining
 path**, so a module holding such a type must be reachable (`pub mod summary;` in
-`model/mod.rs`). Generated files (`src/frb_generated.rs`,
-`lib/ffi_bridge/generated/**`) are produced only by
+`model/mod.rs`, `pub mod project` in `lib.rs`). Generated files
+(`src/frb_generated.rs`, `lib/ffi_bridge/generated/**`) are produced only by
 `flutter_rust_bridge_codegen generate` — never hand edited.
 
 ### D13 — Rust crate types
@@ -139,12 +139,37 @@ path**, so a module holding such a type must be reachable (`pub mod summary;` in
 what Flutter (cargokit) links against; `rlib` is what lets `cargo test` build the
 integration test suite in `tests/` against the public API.
 
+### D14 — Project persistence as a trait, not a format
+
+`ProjectSerializer` abstracts the on-disk format. The concrete `ProjectFormatV1`
+uses newline-delimited JSON (header \n metadata \n model). A future format
+(binary, compressed, encrypted, database-backed) implements the same trait
+without touching the domain model.
+
+### D15 — Format version and schema version are independent
+
+`PROJECT_FORMAT_VERSION` (file container) and `MODEL_SCHEMA_VERSION` (domain
+fields) evolve independently. A format v3 file may carry a schema v1 model.
+Both are stored in the file header and checked at load time.
+
+### D16 — Metadata is not domain state
+
+`Project.name`, `description`, `created_at`, `modified_at` survive a round-trip
+but never affect geometry, calculations, validation or revision. Timestamps are
+set once at creation; `touch()` updates `modified_at`.
+
+### D17 — Single project identity
+
+`Project` has no separate `project_id` field. The identity is always
+`EngineeringModel::project_id`. This eliminates the risk of two disagreeing
+UUIDs for the same project.
+
 ## Explicitly out of scope in this step
 
 3D rendering, Three.js/WebGPU, OpenCascade, CAD geometry, meshes, solids, booleans, BIM
-UI, structural analysis and solvers, AI, backend, cloud, database servers, `.civilx`
-container, migrations, lazy loading, and any engineering logic in Flutter. They arrive
-as separate steps on top of this model.
+UI, structural analysis and solvers, AI, backend, cloud, database servers, SQLite,
+PostgreSQL, migrations, lazy loading, and any engineering logic in Flutter. They
+arrive as separate steps on top of this model.
 
 ## Verification
 

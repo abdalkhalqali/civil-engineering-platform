@@ -38,6 +38,7 @@ pub mod elements;
 pub mod error;
 pub mod math;
 pub mod model;
+pub mod project;
 pub mod units;
 
 mod frb_generated;

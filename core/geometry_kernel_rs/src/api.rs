@@ -14,6 +14,7 @@
 //! commands over the bridge belong to a later step.
 
 use crate::model::{EngineeringModel, ModelSummary};
+use crate::project::{Project, ProjectSummary};
 
 /// Called once by `RustLib.init()` on the Dart side.
 #[flutter_rust_bridge::frb(init)]
@@ -37,4 +38,13 @@ pub fn get_kernel_status() -> String {
 #[flutter_rust_bridge::frb(sync)]
 pub fn create_empty_model() -> ModelSummary {
     EngineeringModel::new().summary()
+}
+
+/// Creates a new empty project with the given name.
+///
+/// The project contains an empty engineering model. This proves the project
+/// persistence layer is reachable through the bridge.
+#[flutter_rust_bridge::frb(sync)]
+pub fn create_project(name: String) -> ProjectSummary {
+    Project::new(name).summary()
 }

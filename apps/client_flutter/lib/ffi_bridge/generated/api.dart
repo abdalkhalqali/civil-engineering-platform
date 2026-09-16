@@ -8,6 +8,8 @@ import 'model/summary.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+import 'project.dart';
+
 /// M0 proof of concept, kept working verbatim: returns a status string that Flutter
 /// displays on screen.
 String getKernelStatus() => RustLib.instance.api.crateApiGetKernelStatus();
@@ -19,3 +21,10 @@ String getKernelStatus() => RustLib.instance.api.crateApiGetKernelStatus();
 /// data into Flutter.
 ModelSummary createEmptyModel() =>
     RustLib.instance.api.crateApiCreateEmptyModel();
+
+/// Creates a new empty project with the given name.
+///
+/// The project contains an empty engineering model. This proves the project
+/// persistence layer is reachable through the bridge.
+ProjectSummary createProject({required String name}) =>
+    RustLib.instance.api.crateApiCreateProject(name: name);
