@@ -1,0 +1,508 @@
+الخطة المقترحة مناسبة للمشروع، وأعتمد الاتجاه المعماري العام.
+
+لكن قبل بدء التنفيذ، هناك تعديلات إلزامية على النطاق والترتيب:
+
+========================================
+ARCHITECTURAL APPROVAL + REQUIRED ADJUSTMENTS
+
+نعتمد المشروع كمنصة Civil Engineering / BIM احترافية طويلة الأجل، وليس كتطبيق 3D Viewer.
+
+المبدأ الأساسي:
+
+Engineering Model = Single Source of Truth
+
+ويجب الحفاظ على الفصل بين:
+
+Engineering Model
+Geometry
+Mesh
+Rendering
+Analytical Model
+Structural Solver
+Flutter UI
+Persistence
+AI
+Cloud
+
+========================================
+
+1. FOUNDATION HARDENING
+   ========================================
+
+ابدأ أولًا بإغلاق فجوة Project Persistence:
+
+ProjectFormatV1::deserialize()
+يجب أن يتحقق تلقائيًا من:
+
+Header
+Format Version
+Model Schema Version
+Project ID
+Model Validation
+
+ويجب أن يؤدي فشل:
+
+model.validate()
+
+إلى:
+
+ProjectError::ModelValidationFailed
+
+مع عدم وجود أي silent repair.
+
+أضف فقط اختبارات regression الضرورية.
+
+يجب أن تستمر جميع الاختبارات السابقة.
+
+========================================
+2. RUST TOOLCHAIN
+
+الإصدار المرجعي للمشروع:
+
+Rust 1.98.1
+
+لكن:
+
+لا تفرض Rust 1.98.1 بطريقة قد تجعل Replit غير قابل للبناء.
+
+تحقق أولًا من توفر الإصدار.
+
+إذا كان متاحًا وآمنًا من ناحية البيئة والمساحة:
+
+يمكن إضافة rust-toolchain.toml.
+
+إذا لم يكن متاحًا:
+
+سجل ذلك كـ environment limitation.
+
+لا تغيّر source architecture بسبب اختلاف نسخة Rust في Replit.
+
+========================================
+3. FLUTTER / DART
+
+الإصدارات المرجعية:
+
+Flutter 3.47.4
+Dart 3.13.3
+flutter_rust_bridge 2.13.0
+
+لكن لا تقم بتنزيل Flutter SDK ضخم أو أي dependencies كبيرة لمجرد اجتياز الاختبار إذا كانت مساحة Replit محدودة.
+
+إذا كان Flutter/Dart غير متوفر:
+
+سجل:
+
+NOT TESTED — ENVIRONMENT LIMITATION
+
+ولا تعتبر ذلك فشلًا في Rust Core.
+
+========================================
+4. ARABIC FOUNDATION
+
+نريد الآن فقط تأسيس البنية العربية، وليس بناء تطبيق إدارة مشاريع كامل.
+
+أنشئ:
+
+Arabic localization foundation
+RTL support
+ARB structure
+supportedLocales
+localizationsDelegates
+Arabic-first theme/text direction
+English fallback architecture
+
+يجب أن تكون الواجهة الحالية عربية ومنظمة.
+
+لكن:
+
+لا تنفذ الآن نظام إدارة مشاريع كامل.
+
+لا تنفذ صفحات كثيرة.
+
+لا تنفذ UI logic يحتوي على Engineering Logic.
+
+Flutter مسؤول عن:
+
+Presentation
+Navigation
+User Interaction
+Localization
+
+Rust مسؤول عن:
+
+Engineering Model
+Validation
+Commands
+Geometry
+Persistence
+Engineering calculations
+
+========================================
+5. DO NOT EXPAND UI SCOPE
+
+في هذه المرحلة لا نريد:
+
+Project Management Suite
+Advanced UI
+3D UI
+Engineering dashboards
+Complex editors
+
+إلا إذا كانت ضرورية لاختبار الـ Core.
+
+الهدف هو تأسيس البنية وليس استنزاف وقت المشروع في الواجهة.
+
+========================================
+6. COMMAND ARCHITECTURE
+
+بعد Foundation Hardening، وسّع ModelCommand تدريجيًا.
+
+ابدأ فقط بالتصميم والبنية الضرورية.
+
+المسار المستهدف:
+
+User Action
+↓
+Validated Command
+↓
+Engineering Model
+↓
+revision++
+↓
+Updated State/Summary
+
+يجب منع أي مسار يسمح بتجاوز validation.
+
+لكن لا تبنِ الآن نظام Undo/Redo كاملًا.
+
+ولا تبنِ Collaboration.
+
+ولا Event Sourcing كاملًا.
+
+صمّم extension points فقط إذا كانت ضرورية.
+
+========================================
+7. GEOMETRY MUST REMAIN THE NEXT MAJOR TARGET
+
+بعد Foundation Hardening وArabic Foundation المحدودة:
+
+نريد الانتقال مباشرة إلى Geometry.
+
+لا نريد أن تتحول Arabic UI إلى مرحلة طويلة تؤخر Geometry.
+
+التسلسل:
+
+Engineering Model
+↓
+Parametric Geometry Service
+↓
+GeometryKernel Trait
+↓
+Kernel Adapter
+↓
+Concrete Kernel
+
+========================================
+8. CADRUM / OCCT SPECIAL RULE
+
+بسبب مشكلة مساحة التخزين السابقة:
+
+ممنوع البدء مباشرة بتنزيل OCCT كبير.
+
+قبل أي integration حقيقي:
+
+نفذ Geometry Kernel Probe منفصلًا.
+
+يجب أن يتحقق من:
+
+- cadrum version
+- OCCT version
+- dependency size
+- download size
+- extraction size
+- build requirements
+- compile time
+- runtime API
+- Linux compatibility
+- Android feasibility
+- iOS feasibility
+- Web/WASM feasibility
+- license
+- API stability
+
+إذا كان هناك احتمال كبير لاستنزاف مساحة البيئة:
+
+توقف قبل تنزيل binary كبير.
+
+لا تكرر تجربة STEP 4B السابقة التي أدت إلى امتلاء filesystem.
+
+========================================
+9. GEOMETRY ABSTRACTION
+
+حتى عند استخدام Cadrum:
+
+Engineering Model MUST NOT import Cadrum/OCCT types.
+
+يجب أن تكون هناك طبقة:
+
+GeometryKernel trait
+GeometryShape
+Solid
+BoundingBox
+TriangleMesh
+GeometryError
+TessellationSettings
+
+ثم:
+
+CadrumAdapter
+
+بحيث يكون:
+
+Engineering Model
+↓
+Geometry Service
+↓
+GeometryKernel trait
+↓
+CadrumAdapter
+↓
+OCCT
+
+ويمكن لاحقًا استبدال kernel دون إعادة بناء Engineering Model.
+
+========================================
+10. PARAMETRIC GEOMETRY
+
+الهندسة يجب أن تكون مشتقة من المعلمات الهندسية.
+
+مثال:
+
+Column
+↓
+cross section
+↓
+base elevation
+↓
+top elevation
+↓
+transform
+↓
+Parametric Solid
+
+ولا يتم تخزين:
+
+Solid
+أو
+Mesh
+
+داخل EngineeringModel.
+
+الـ Solid والـ Mesh مشتقان وقابلان لإعادة البناء.
+
+========================================
+11. PHYSICAL VS ANALYTICAL MODEL
+
+يجب الحفاظ على:
+
+Physical Model
+↓
+Analytical Model
+↓
+Structural Solver
+
+ولا يتم دمجهما في نموذج واحد.
+
+الهندسة الفيزيائية ليست هي النموذج التحليلي.
+
+========================================
+12. STRUCTURAL ENGINEERING
+
+لاحقًا يجب أن تكون النتائج الهندسية:
+
+Traceable
+Reproducible
+Validated
+Documented
+
+ولا توجد أي نتائج وهمية.
+
+كل نتيجة مستقبلية يجب أن ترتبط بـ:
+
+Model version
+Solver version
+Code/Standard
+Assumptions
+Inputs
+Calculation path
+
+========================================
+13. AI
+
+AI لا يكتب مباشرة إلى:
+
+EngineeringModel
+Database
+Geometry
+Mesh
+
+المسار المستقبلي:
+
+AI Intent
+↓
+Validated Command
+↓
+Engineering Model
+↓
+Geometry / Analysis
+
+========================================
+14. CLOUD
+
+Cloud يأتي بعد استقرار:
+
+Core
+Persistence
+Commands
+Geometry
+Rendering
+Analytical Model
+Engineering calculations
+
+ولا نبني Backend مبكرًا لمجرد وجوده في roadmap.
+
+========================================
+15. NO PREMATURE FUTURE MODULES
+
+لا تنشئ مجلدات أو packages مستقبلية لمجرد مطابقة roadmap.
+
+لا ننشئ الآن:
+
+backend_api
+rendering_web
+rendering_mobile
+engineering/analysis
+AI
+cloud
+
+إلا عندما تدخل المرحلة الفعلية التي تحتاجها.
+
+========================================
+16. TESTING RULE
+
+كل مرحلة:
+
+Inspect
+→ Plan
+→ Implement
+→ Test
+→ Fix
+→ Document
+→ Report
+→ STOP
+
+ولا تنتقل إلى المرحلة التالية تلقائيًا.
+
+أي feature لا تعتبر مكتملة بمجرد وجود:
+
+class
+trait
+function
+placeholder
+
+يجب أن تكون:
+
+Implemented
+Integrated
+Tested
+
+أو توسم بوضوح:
+
+NOT IMPLEMENTED
+
+========================================
+17. CURRENT EXECUTION ORDER
+
+الترتيب المعتمد الآن:
+
+STEP 3.1
+Foundation Hardening
++
+Arabic Foundation محدودة
+
+ثم:
+
+STEP 4B
+Geometry Kernel Probe / Adapter
+
+ثم:
+
+STEP 4C
+Parametric Geometry
+
+ثم:
+
+STEP 5
+3D Rendering
+
+ثم:
+
+STEP 6
+Commands / Selection / Editing / 2D
+
+ثم:
+
+Analytical Model
+
+ثم:
+
+Structural Analysis
+
+ثم:
+
+Design / Quantities / Reports
+
+ثم:
+
+BIM / Survey / Terrain / Roads
+
+ثم:
+
+AI
+
+ثم:
+
+Cloud / Collaboration
+
+========================================
+18. STOP CONDITION
+
+في هذه الرسالة لا تبدأ أي تعديل.
+
+أولًا:
+
+Inspect current repository.
+
+أكد:
+
+- current branch
+- HEAD
+- working tree
+- current Rust version
+- Flutter availability
+- Dart availability
+- current tests
+- current project persistence implementation
+- current generated FRB state
+
+ثم قدم:
+
+CURRENT STATE
+GAPS
+PROPOSED FIRST EXECUTION STEP
+RISKS
+
+ولا تنفذ شيئًا حتى يتم اعتماد أول خطوة التنفيذ.
+
+========================================
+END
