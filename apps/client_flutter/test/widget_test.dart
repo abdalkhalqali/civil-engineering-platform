@@ -8,8 +8,11 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(const CivilEngineeringApp());
 
-    // Title is shown in the app bar and as the screen heading.
-    expect(find.text('Civil Engineering Platform'), findsWidgets);
-    expect(find.widgetWithText(FilledButton, 'Test Rust Kernel'), findsOneWidget);
+    // Arabic is the default locale; English remains available as a fallback.
+    expect(find.text('منصة الهندسة المدنية'), findsWidgets);
+    expect(
+      find.widgetWithText(FilledButton, 'اختبار نواة Rust'),
+      findsOneWidget,
+    );
   });
 }

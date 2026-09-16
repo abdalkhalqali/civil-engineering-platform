@@ -28,9 +28,9 @@
 //!   database or on a renderer.
 //!
 //! Scope of the current step: the model core (units, math, elements, model,
-//! validation, serialization). Meshes, solids, booleans, CAD geometry, 3D
-//! rendering, structural analysis, `.civilx` files and databases are explicitly
-//! later steps.
+//! validation and `.civilx` project persistence). Meshes, solids, booleans, CAD
+//! geometry, 3D rendering, structural analysis and databases are explicitly later
+//! steps.
 
 pub mod api;
 pub mod commands;

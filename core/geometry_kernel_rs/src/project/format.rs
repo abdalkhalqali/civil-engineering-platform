@@ -211,6 +211,13 @@ impl ProjectSerializer for ProjectFormatV1 {
             });
         }
 
+        let validation = model.validate();
+        if !validation.is_valid() {
+            return Err(ProjectError::ModelValidationFailed {
+                issue_count: validation.len(),
+            });
+        }
+
         Ok(Project { metadata, model })
     }
 }

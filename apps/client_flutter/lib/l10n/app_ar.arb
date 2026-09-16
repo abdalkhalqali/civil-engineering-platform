@@ -1,0 +1,17 @@
+{
+  "@@locale": "ar",
+  "appTitle": "منصة الهندسة المدنية",
+  "screenTitle": "منصة الهندسة المدنية",
+  "bridgeDescription": "واجهة إثبات اتصال بين Flutter ونواة Rust الهندسية",
+  "testRustKernel": "اختبار نواة Rust",
+  "kernelConnected": "تم الاتصال بنواة الهندسة بنجاح.",
+  "bridgeError": "خطأ في الجسر: {error}",
+  "@bridgeError": {
+    "description": "An error raised while calling the Rust bridge.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
+}

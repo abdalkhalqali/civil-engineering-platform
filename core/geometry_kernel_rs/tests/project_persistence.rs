@@ -10,7 +10,9 @@ use geometry_kernel_rs::elements::{
     StructuralBeam, StructuralColumn, StructuralSlab, StructuralWall,
 };
 use geometry_kernel_rs::math::Point3D;
-use geometry_kernel_rs::model::{CrossSection, Level, Material, MODEL_SCHEMA_VERSION};
+use geometry_kernel_rs::model::{
+    CrossSection, Level, Material, ValidationMode, MODEL_SCHEMA_VERSION,
+};
 use geometry_kernel_rs::project::format::{ProjectFormatV1, ProjectSerializer};
 use geometry_kernel_rs::project::{Project, ProjectError, PROJECT_FORMAT_VERSION};
 use geometry_kernel_rs::units::{Length, Stress};
@@ -207,9 +209,13 @@ fn test_4_round_trip_is_deterministic() {
 #[test]
 fn test_5_uuids_are_preserved_through_serialisation() {
     let mut project = Project::new("Identity Test");
-    let level_id = project
+    let base_level_id = project
         .model
         .add_level(Level::new("L1", Length::from_meters(0.0)))
+        .unwrap();
+    let top_level_id = project
+        .model
+        .add_level(Level::new("L2", Length::from_meters(3.0)))
         .unwrap();
     let material_id = project
         .model
@@ -223,8 +229,8 @@ fn test_5_uuids_are_preserved_through_serialisation() {
         .model
         .add_element(Element::Column(StructuralColumn::new(
             BaseElement::new(ElementCategory::Column, "C001"),
-            level_id,
-            level_id,
+            base_level_id,
+            top_level_id,
             section_id,
             material_id,
         )))
@@ -236,7 +242,8 @@ fn test_5_uuids_are_preserved_through_serialisation() {
 
     // All ids survived.
     assert_eq!(loaded.project_id(), project_id_before);
-    assert!(loaded.model.level(level_id).is_some());
+    assert!(loaded.model.level(base_level_id).is_some());
+    assert!(loaded.model.level(top_level_id).is_some());
     assert!(loaded.model.material(material_id).is_some());
     assert!(loaded.model.cross_section(section_id).is_some());
     assert!(loaded.model.element(column_id).is_some());
@@ -414,6 +421,49 @@ fn test_10_corrupted_payload_does_not_panic() {
     // Valid JSON but wrong structure.
     let result = ProjectFormatV1::deserialize(b"{}\n");
     assert!(result.is_err());
+}
+
+// ── Test 10b: Invalid model is rejected during load ─────────────────────
+
+#[test]
+fn test_10b_invalid_model_is_rejected_during_load() {
+    let mut project = Project::new("Invalid Model");
+    project.model.validation_mode = ValidationMode::Permissive;
+
+    let top_level = project
+        .model
+        .add_level(Level::new("Top", Length::from_meters(3.0)))
+        .unwrap();
+    let material = project
+        .model
+        .add_material(Material::concrete_c30())
+        .unwrap();
+    let section = project
+        .model
+        .add_cross_section(CrossSection::rectangular("300x300", mm(300.0), mm(300.0)))
+        .unwrap();
+
+    // Permissive mode lets us construct the invalid payload that a file may contain.
+    project
+        .model
+        .add_element(Element::Column(StructuralColumn::new(
+            BaseElement::new(ElementCategory::Column, "C_BAD"),
+            Uuid::new_v4(),
+            top_level,
+            section,
+            material,
+        )))
+        .unwrap();
+
+    let bytes = ProjectFormatV1::serialize(&project).unwrap();
+    let result = ProjectFormatV1::deserialize(&bytes);
+
+    match result {
+        Err(ProjectError::ModelValidationFailed { issue_count }) => {
+            assert_eq!(issue_count, 1);
+        }
+        other => panic!("expected model validation failure, got {other:?}"),
+    }
 }
 
 // ── Test 11: Rejected mutation doesn't change revision ─────────────────

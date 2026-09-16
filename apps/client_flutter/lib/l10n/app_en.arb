@@ -1,0 +1,17 @@
+{
+  "@@locale": "en",
+  "appTitle": "Civil Engineering Platform",
+  "screenTitle": "Civil Engineering Platform",
+  "bridgeDescription": "Flutter to Rust engineering kernel connectivity proof",
+  "testRustKernel": "Test Rust Kernel",
+  "kernelConnected": "Connected to the engineering kernel successfully.",
+  "bridgeError": "Bridge error: {error}",
+  "@bridgeError": {
+    "description": "An error raised while calling the Rust bridge.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
+}

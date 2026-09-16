@@ -1,17 +1,29 @@
 # client_flutter
 
-A new Flutter project.
+واجهة Flutter العربية لمنصة الهندسة المدنية.
 
-## Getting Started
+## الحالة الحالية
 
-This project is a starting point for a Flutter application.
+هذه المرحلة تؤسس واجهة عربية أولية باتجاه RTL مع دعم إنجليزي احتياطي. الواجهة الحالية
+ما تزال شاشة تحقق من اتصال Flutter بنواة Rust؛ لا تحتوي على إدارة مشاريع أو محررات
+هندسية بعد.
 
-A few resources to get you started if this is your first Flutter project:
+ملفات الترجمة موجودة في `lib/l10n/` بصيغة ARB، ويولد Flutter ملف
+`app_localizations.dart` عند تشغيل توليد الترجمة.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## الإصدارات المرجعية
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter 3.47.4
+- Dart 3.13.3
+- flutter_rust_bridge 2.13.0
+
+## التحقق
+
+```bash
+flutter pub get
+flutter analyze
+flutter test
+```
+
+في البيئات التي لا تحتوي على Flutter أو Dart، تسجل فحوصات Flutter كـ
+`NOT TESTED — ENVIRONMENT LIMITATION` ولا تعتبر فشلًا في Rust Core.
