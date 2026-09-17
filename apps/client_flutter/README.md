@@ -27,3 +27,14 @@ flutter test
 
 في البيئات التي لا تحتوي على Flutter أو Dart، تسجل فحوصات Flutter كـ
 `NOT TESTED — ENVIRONMENT LIMITATION` ولا تعتبر فشلًا في Rust Core.
+
+## تشغيل المعاينة في Replit
+
+من جذر المستودع:
+
+```bash
+./scripts/start_flutter_web.sh
+```
+
+السكربت يستخدم Flutter 3.47.4 ويشغل Flutter Web على `0.0.0.0:5000`، وهو المنفذ
+المطلوب للمعاينة عبر Replit.

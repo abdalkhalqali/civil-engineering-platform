@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'ffi_bridge/generated/api.dart';
@@ -6,7 +7,16 @@ import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
   // Initialize the Rust kernel before any bridge call is made.
-  await RustLib.init();
+  if (!kIsWeb) {
+    try {
+      await RustLib.init();
+    } catch (error, stackTrace) {
+      // Native platforms keep the bridge initialization failure visible in
+      // logs while still allowing the UI to mount.
+      debugPrint('Rust bridge initialization failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
   runApp(const CivilEngineeringApp());
 }
 
@@ -16,7 +26,7 @@ class CivilEngineeringApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       debugShowCheckedModeBanner: false,
       locale: const Locale('ar'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -43,7 +53,7 @@ class _KernelBridgeScreenState extends State<KernelBridgeScreen> {
   bool _failed = false;
 
   void _testRustKernel() {
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       try {
         getKernelStatus();
@@ -59,7 +69,7 @@ class _KernelBridgeScreenState extends State<KernelBridgeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
     return Directionality(
