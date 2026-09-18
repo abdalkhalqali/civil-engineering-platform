@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'ffi_bridge/generated/api.dart';
@@ -7,15 +6,13 @@ import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
   // Initialize the Rust kernel before any bridge call is made.
-  if (!kIsWeb) {
-    try {
-      await RustLib.init();
-    } catch (error, stackTrace) {
-      // Native platforms keep the bridge initialization failure visible in
-      // logs while still allowing the UI to mount.
-      debugPrint('Rust bridge initialization failed: $error');
-      debugPrintStack(stackTrace: stackTrace);
-    }
+  try {
+    await RustLib.init();
+  } catch (error, stackTrace) {
+    // Keep the UI available when a platform-specific bridge artifact is
+    // unavailable, while reporting the initialization failure explicitly.
+    debugPrint('Rust bridge initialization failed: $error');
+    debugPrintStack(stackTrace: stackTrace);
   }
   runApp(const CivilEngineeringApp());
 }

@@ -1,0 +1,1 @@
+- [FRB WebAssembly threading](frb-webassembly-threading.md) — FRB Web needs threaded WASM flags, matching wasm-bindgen, and COOP/COEP headers.
