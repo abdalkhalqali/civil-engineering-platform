@@ -16,6 +16,15 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
   ViewportInteraction _interaction = ViewportInteraction.orbit;
   ViewportProjection _projection = ViewportProjection.perspective;
   String? _selectedElement;
+  String _projectName = 'مشروع تجريبي';
+  String _projectType = 'مبنى إنشائي';
+  double _landArea = 1200;
+
+  static const _projectTypes = [
+    'مبنى إنشائي',
+    'جسر',
+    'أعمال ترابية وتهيئة أرض',
+  ];
 
   void _checkKernel() {
     try {
@@ -36,6 +45,49 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+  }
+
+  Future<void> _openNewProjectDialog() async {
+    final draft = await showDialog<_ProjectDraft>(
+      context: context,
+      builder: (context) => _NewProjectDialog(
+        initialName: _projectName,
+        initialType: _projectType,
+        initialLandArea: _landArea,
+        projectTypes: _projectTypes,
+      ),
+    );
+    if (draft == null || !mounted) return;
+
+    setState(() {
+      _projectName = draft.name;
+      _projectType = draft.type;
+      _landArea = draft.landArea;
+      _selectedElement = null;
+    });
+
+    if (!widget.kernelReady) {
+      _showMessage(
+        'تم تجهيز المشروع في الواجهة. اتصل بالنواة لحفظه في النموذج الهندسي.',
+        error: true,
+      );
+      return;
+    }
+
+    try {
+      final summary = createProject(name: draft.name);
+      _showMessage(
+        'تم إنشاء "${summary.name}" بنجاح · مساحة الأرض ${_formatArea(draft.landArea)} م²',
+      );
+    } catch (error) {
+      _showMessage('تعذر إنشاء المشروع في النواة: $error', error: true);
+    }
+  }
+
+  String _formatArea(double area) {
+    return area == area.roundToDouble()
+        ? area.toStringAsFixed(0)
+        : area.toStringAsFixed(2);
   }
 
   @override
@@ -70,72 +122,92 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
   }
 
   Widget _buildHeader() {
-    return Container(
-      height: 72,
-      padding: const EdgeInsets.symmetric(horizontal: 22),
-      decoration: const BoxDecoration(
-        color: Color(0xff0b1d2c),
-        border: Border(bottom: BorderSide(color: Color(0xff1d3547))),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: const Color(0xff18a6a6).withValues(alpha: .15),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xff27c6c0)),
-            ),
-            child: const Icon(Icons.architecture, color: Color(0xff54e0d7)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 720;
+        return Container(
+          height: 72,
+          padding: EdgeInsets.symmetric(horizontal: compact ? 10 : 22),
+          decoration: const BoxDecoration(
+            color: Color(0xff0b1d2c),
+            border: Border(bottom: BorderSide(color: Color(0xff1d3547))),
           ),
-          const SizedBox(width: 12),
-          const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(
-                'منصة الهندسة المدنية',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xff18a6a6).withValues(alpha: .15),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xff27c6c0)),
+                ),
+                child: const Icon(Icons.architecture, color: Color(0xff54e0d7)),
+              ),
+              if (!compact) ...[
+                const SizedBox(width: 12),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'منصة الهندسة المدنية',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'مساحة العمل الهندسية',
+                      style: TextStyle(color: Color(0xff8ea8b8), fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+              const Spacer(),
+              if (!compact) _connectionBadge(),
+              IconButton(
+                tooltip: 'إنشاء مشروع جديد',
+                onPressed: _openNewProjectDialog,
+                icon: const Icon(
+                  Icons.create_new_folder_outlined,
+                  color: Color(0xffb7cad6),
                 ),
               ),
-              Text(
-                'مساحة العمل الهندسية',
-                style: TextStyle(color: Color(0xff8ea8b8), fontSize: 12),
+              if (!compact) ...[
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip: 'فحص اتصال النواة',
+                  onPressed: _checkKernel,
+                  icon: const Icon(Icons.sync, color: Color(0xffb7cad6)),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip: 'الإعدادات',
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.settings_outlined,
+                    color: Color(0xffb7cad6),
+                  ),
+                ),
+              ],
+              const SizedBox(width: 8),
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: const Color(0xff24536b),
+                child: const Text(
+                  'م',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
-          const Spacer(),
-          _connectionBadge(),
-          const SizedBox(width: 18),
-          IconButton(
-            tooltip: 'فحص اتصال النواة',
-            onPressed: _checkKernel,
-            icon: const Icon(Icons.sync, color: Color(0xffb7cad6)),
-          ),
-          const SizedBox(width: 4),
-          IconButton(
-            tooltip: 'الإعدادات',
-            onPressed: () {},
-            icon: const Icon(Icons.settings_outlined, color: Color(0xffb7cad6)),
-          ),
-          const SizedBox(width: 8),
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: const Color(0xff24536b),
-            child: const Text(
-              'م',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -198,9 +270,19 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
             ),
           ),
           const SizedBox(height: 5),
-          const Text(
-            'مشروع تجريبي · النموذج الهندسي',
+          Text(
+            '$_projectType · مساحة ${_formatArea(_landArea)} م²',
             style: TextStyle(color: Color(0xff7793a3), fontSize: 11),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _projectName,
+            style: const TextStyle(
+              color: Color(0xffd5e1e7),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 22),
           _treeSection(
@@ -569,6 +651,207 @@ class _LegendDot extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ProjectDraft {
+  const _ProjectDraft({
+    required this.name,
+    required this.type,
+    required this.landArea,
+  });
+
+  final String name;
+  final String type;
+  final double landArea;
+}
+
+class _NewProjectDialog extends StatefulWidget {
+  const _NewProjectDialog({
+    required this.initialName,
+    required this.initialType,
+    required this.initialLandArea,
+    required this.projectTypes,
+  });
+
+  final String initialName;
+  final String initialType;
+  final double initialLandArea;
+  final List<String> projectTypes;
+
+  @override
+  State<_NewProjectDialog> createState() => _NewProjectDialogState();
+}
+
+class _NewProjectDialogState extends State<_NewProjectDialog> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _areaController;
+  late String _selectedType;
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName);
+    _areaController = TextEditingController(
+      text: widget.initialLandArea.toStringAsFixed(0),
+    );
+    _selectedType = widget.initialType;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _areaController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final name = _nameController.text.trim();
+    final area = double.tryParse(_areaController.text.trim());
+    if (name.isEmpty) {
+      setState(() => _errorText = 'اكتب اسمًا للمشروع أولًا.');
+      return;
+    }
+    if (area == null || area <= 0) {
+      setState(() => _errorText = 'أدخل مساحة صحيحة أكبر من صفر.');
+      return;
+    }
+    Navigator.of(context)
+        .pop(_ProjectDraft(name: name, type: _selectedType, landArea: area));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final compact = MediaQuery.sizeOf(context).width < 520;
+    return AlertDialog(
+      backgroundColor: const Color(0xff102635),
+      surfaceTintColor: Colors.transparent,
+      title: const Row(
+        children: [
+          Icon(Icons.create_new_folder_outlined, color: Color(0xff54e0d7)),
+          SizedBox(width: 10),
+          Text(
+            'إنشاء مشروع جديد',
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: compact ? null : 480,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'أدخل بيانات المشروع الأساسية للبدء في مساحة عمل جديدة.',
+                style: TextStyle(color: Color(0xffa7bdc9), fontSize: 12),
+              ),
+              const SizedBox(height: 22),
+              TextField(
+                controller: _nameController,
+                autofocus: true,
+                textInputAction: TextInputAction.next,
+                decoration: _inputDecoration(
+                  label: 'اسم المشروع',
+                  hint: 'مثال: جسر وادي حضرموت',
+                  icon: Icons.title,
+                ),
+              ),
+              const SizedBox(height: 14),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedType,
+                dropdownColor: const Color(0xff183344),
+                decoration: _inputDecoration(
+                  label: 'نوع المشروع',
+                  hint: '',
+                  icon: Icons.category_outlined,
+                ),
+                items: [
+                  for (final type in widget.projectTypes)
+                    DropdownMenuItem(
+                      value: type,
+                      child: Text(
+                        type,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                ],
+                onChanged: (value) {
+                  if (value != null) setState(() => _selectedType = value);
+                },
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _areaController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _submit(),
+                decoration: _inputDecoration(
+                  label: 'المساحة التقديرية لقطعة الأرض',
+                  hint: '1200',
+                  icon: Icons.square_foot,
+                ).copyWith(suffixText: 'م²'),
+              ),
+              if (_errorText != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _errorText!,
+                  style: TextStyle(
+                    color: theme.colorScheme.error,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('إلغاء'),
+        ),
+        FilledButton.icon(
+          onPressed: _submit,
+          icon: const Icon(Icons.add, size: 18),
+          label: const Text('إنشاء المشروع'),
+        ),
+      ],
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required String label,
+    required String hint,
+    required IconData icon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon, color: const Color(0xff54e0d7)),
+      labelStyle: const TextStyle(color: Color(0xffa7bdc9)),
+      hintStyle: const TextStyle(color: Color(0xff6f8c9d)),
+      filled: true,
+      fillColor: const Color(0xff0b1d2c),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xff2a4658)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xff2a4658)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xff54e0d7), width: 1.5),
+      ),
     );
   }
 }
