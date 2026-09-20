@@ -1,1 +1,2 @@
 - [FRB WebAssembly threading](frb-webassembly-threading.md) — FRB Web needs threaded WASM flags, matching wasm-bindgen, and COOP/COEP headers.
+- [GitHub push authentication](github-push-authentication.md) — this workspace's GitHub PAT push uses Basic auth with x-access-token when Bearer auth is rejected.
