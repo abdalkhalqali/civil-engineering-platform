@@ -15,6 +15,9 @@ class EngineeringViewport extends StatefulWidget {
     required this.projection,
     required this.snapshot,
     required this.onElementSelected,
+    this.hiddenCategories = const <String>{},
+    this.showGrid = true,
+    this.resetToken = 0,
     super.key,
   });
 
@@ -22,6 +25,9 @@ class EngineeringViewport extends StatefulWidget {
   final ViewportProjection projection;
   final WorkspaceSnapshot? snapshot;
   final ValueChanged<String> onElementSelected;
+  final Set<String> hiddenCategories;
+  final bool showGrid;
+  final int resetToken;
 
   @override
   State<EngineeringViewport> createState() => _EngineeringViewportState();
@@ -34,6 +40,27 @@ class _EngineeringViewportState extends State<EngineeringViewport> {
   Offset _pan = Offset.zero;
   Offset _lastFocal = Offset.zero;
   String? _selected;
+  int _lastResetToken = 0;
+
+  @override
+  void didUpdateWidget(covariant EngineeringViewport oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.resetToken != _lastResetToken) {
+      _lastResetToken = widget.resetToken;
+      _yaw = -0.68;
+      _pitch = -0.56;
+      _zoom = 1;
+      _pan = Offset.zero;
+    }
+    if (widget.snapshot != oldWidget.snapshot &&
+        _selected != null &&
+        !(widget.snapshot?.elements.any(
+              (element) => element.name == _selected,
+            ) ??
+            false)) {
+      _selected = null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +107,8 @@ class _EngineeringViewportState extends State<EngineeringViewport> {
             projection: widget.projection,
             snapshot: widget.snapshot,
             selectedElement: _selected,
+            hiddenCategories: widget.hiddenCategories,
+            showGrid: widget.showGrid,
           ),
           child: const SizedBox.expand(),
         ),
@@ -160,6 +189,8 @@ class _EngineeringScenePainter extends CustomPainter {
     required this.projection,
     required this.snapshot,
     required this.selectedElement,
+    required this.hiddenCategories,
+    required this.showGrid,
   });
 
   final double yaw;
@@ -169,6 +200,8 @@ class _EngineeringScenePainter extends CustomPainter {
   final ViewportProjection projection;
   final WorkspaceSnapshot? snapshot;
   final String? selectedElement;
+  final Set<String> hiddenCategories;
+  final bool showGrid;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -189,7 +222,7 @@ class _EngineeringScenePainter extends CustomPainter {
       projection: projection,
     );
 
-    _drawGrid(canvas, camera);
+    if (showGrid) _drawGrid(canvas, camera);
     _drawBuilding(canvas, camera);
     _drawAxes(canvas, camera);
   }
@@ -274,6 +307,7 @@ class _EngineeringScenePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     for (final element in elements) {
+      if (hiddenCategories.contains(element.category)) continue;
       final selected = element.name == selectedElement;
       switch (element.category) {
         case 'column':
