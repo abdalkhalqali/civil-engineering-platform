@@ -28,10 +28,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  ElementSnapshot dco_decode_element_snapshot(dynamic raw);
+
+  @protected
+  double dco_decode_f_64(dynamic raw);
+
+  @protected
+  GridSnapshot dco_decode_grid_snapshot(dynamic raw);
+
+  @protected
+  LevelSnapshot dco_decode_level_snapshot(dynamic raw);
+
+  @protected
+  List<ElementSnapshot> dco_decode_list_element_snapshot(dynamic raw);
+
+  @protected
+  List<GridSnapshot> dco_decode_list_grid_snapshot(dynamic raw);
+
+  @protected
+  List<LevelSnapshot> dco_decode_list_level_snapshot(dynamic raw);
+
+  @protected
+  List<PointSnapshot> dco_decode_list_point_snapshot(dynamic raw);
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
   ModelSummary dco_decode_model_summary(dynamic raw);
+
+  @protected
+  PointSnapshot dco_decode_point_snapshot(dynamic raw);
 
   @protected
   ProjectSummary dco_decode_project_summary(dynamic raw);
@@ -49,13 +76,51 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void dco_decode_unit(dynamic raw);
 
   @protected
+  WorkspaceSnapshot dco_decode_workspace_snapshot(dynamic raw);
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
+
+  @protected
+  ElementSnapshot sse_decode_element_snapshot(SseDeserializer deserializer);
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer);
+
+  @protected
+  GridSnapshot sse_decode_grid_snapshot(SseDeserializer deserializer);
+
+  @protected
+  LevelSnapshot sse_decode_level_snapshot(SseDeserializer deserializer);
+
+  @protected
+  List<ElementSnapshot> sse_decode_list_element_snapshot(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<GridSnapshot> sse_decode_list_grid_snapshot(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<LevelSnapshot> sse_decode_list_level_snapshot(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<PointSnapshot> sse_decode_list_point_snapshot(
+    SseDeserializer deserializer,
+  );
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
   ModelSummary sse_decode_model_summary(SseDeserializer deserializer);
+
+  @protected
+  PointSnapshot sse_decode_point_snapshot(SseDeserializer deserializer);
 
   @protected
   ProjectSummary sse_decode_project_summary(SseDeserializer deserializer);
@@ -73,6 +138,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_decode_unit(SseDeserializer deserializer);
 
   @protected
+  WorkspaceSnapshot sse_decode_workspace_snapshot(SseDeserializer deserializer);
+
+  @protected
   int sse_decode_i_32(SseDeserializer deserializer);
 
   @protected
@@ -82,6 +150,45 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_element_snapshot(
+    ElementSnapshot self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_grid_snapshot(GridSnapshot self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_level_snapshot(LevelSnapshot self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_element_snapshot(
+    List<ElementSnapshot> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_grid_snapshot(
+    List<GridSnapshot> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_level_snapshot(
+    List<LevelSnapshot> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_point_snapshot(
+    List<PointSnapshot> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
     Uint8List self,
     SseSerializer serializer,
@@ -89,6 +196,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_model_summary(ModelSummary self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_point_snapshot(PointSnapshot self, SseSerializer serializer);
 
   @protected
   void sse_encode_project_summary(
@@ -107,6 +217,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_workspace_snapshot(
+    WorkspaceSnapshot self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);

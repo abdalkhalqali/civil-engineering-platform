@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../ffi_bridge/generated/api.dart';
+
 enum ViewportInteraction { orbit, pan }
 
 enum ViewportProjection { perspective, orthographic }
@@ -11,12 +13,14 @@ class EngineeringViewport extends StatefulWidget {
   const EngineeringViewport({
     required this.interaction,
     required this.projection,
+    required this.snapshot,
     required this.onElementSelected,
     super.key,
   });
 
   final ViewportInteraction interaction;
   final ViewportProjection projection;
+  final WorkspaceSnapshot? snapshot;
   final ValueChanged<String> onElementSelected;
 
   @override
@@ -74,6 +78,7 @@ class _EngineeringViewportState extends State<EngineeringViewport> {
             zoom: _zoom,
             pan: _pan,
             projection: widget.projection,
+            snapshot: widget.snapshot,
             selectedElement: _selected,
           ),
           child: const SizedBox.expand(),
@@ -92,25 +97,48 @@ class _EngineeringViewportState extends State<EngineeringViewport> {
       pan: _pan,
       projection: widget.projection,
     );
-    final elements = <String, List<_Vec3>>{
-      'Column C-01': [_Vec3(-3.2, -2.2, 0), _Vec3(-3.2, -2.2, 4)],
-      'Column C-02': [_Vec3(3.2, -2.2, 0), _Vec3(3.2, -2.2, 4)],
-      'Column C-03': [_Vec3(-3.2, 2.2, 0), _Vec3(-3.2, 2.2, 4)],
-      'Column C-04': [_Vec3(3.2, 2.2, 0), _Vec3(3.2, 2.2, 4)],
-    };
     String? closest;
     var distance = 22.0;
-    for (final entry in elements.entries) {
-      final a = camera.project(entry.value[0]);
-      final b = camera.project(entry.value[1]);
-      final d = _distanceToSegment(point, a, b);
-      if (d < distance) {
-        distance = d;
-        closest = entry.key;
+    for (final element
+        in widget.snapshot?.elements ?? const <ElementSnapshot>[]) {
+      for (final segment in _elementSegments(element)) {
+        final a = camera.project(segment.$1);
+        final b = camera.project(segment.$2);
+        final d = _distanceToSegment(point, a, b);
+        if (d < distance) {
+          distance = d;
+          closest = element.name;
+        }
       }
     }
     return closest;
   }
+
+  List<(_Vec3, _Vec3)> _elementSegments(ElementSnapshot element) {
+    switch (element.category) {
+      case 'column':
+        return [
+          (
+            _Vec3(element.x, element.y, element.z),
+            _Vec3(element.x, element.y, element.topZ),
+          ),
+        ];
+      case 'beam':
+        return [(_vec3(element.start), _vec3(element.end))];
+      case 'slab':
+        return [
+          for (var i = 0; i < element.boundary.length; i++)
+            (
+              _vec3(element.boundary[i]),
+              _vec3(element.boundary[(i + 1) % element.boundary.length]),
+            ),
+        ];
+      default:
+        return const [];
+    }
+  }
+
+  _Vec3 _vec3(PointSnapshot point) => _Vec3(point.x, point.y, point.z);
 
   double _distanceToSegment(Offset p, Offset a, Offset b) {
     final ab = b - a;
@@ -130,6 +158,7 @@ class _EngineeringScenePainter extends CustomPainter {
     required this.zoom,
     required this.pan,
     required this.projection,
+    required this.snapshot,
     required this.selectedElement,
   });
 
@@ -138,6 +167,7 @@ class _EngineeringScenePainter extends CustomPainter {
   final double zoom;
   final Offset pan;
   final ViewportProjection projection;
+  final WorkspaceSnapshot? snapshot;
   final String? selectedElement;
 
   @override
@@ -229,12 +259,7 @@ class _EngineeringScenePainter extends CustomPainter {
   }
 
   void _drawBuilding(Canvas canvas, _SceneCamera camera) {
-    final posts = <String, List<_Vec3>>{
-      'Column C-01': [_Vec3(-3.2, -2.2, 0), _Vec3(-3.2, -2.2, 4)],
-      'Column C-02': [_Vec3(3.2, -2.2, 0), _Vec3(3.2, -2.2, 4)],
-      'Column C-03': [_Vec3(-3.2, 2.2, 0), _Vec3(-3.2, 2.2, 4)],
-      'Column C-04': [_Vec3(3.2, 2.2, 0), _Vec3(3.2, 2.2, 4)],
-    };
+    final elements = snapshot?.elements ?? const <ElementSnapshot>[];
     final beamPaint = Paint()
       ..color = const Color(0xffe7a85f)
       ..strokeWidth = 5
@@ -248,55 +273,56 @@ class _EngineeringScenePainter extends CustomPainter {
       ..strokeWidth = 9
       ..strokeCap = StrokeCap.round;
 
-    final corners = [
-      const _Vec3(-3.2, -2.2, 4),
-      const _Vec3(3.2, -2.2, 4),
-      const _Vec3(3.2, 2.2, 4),
-      const _Vec3(-3.2, 2.2, 4),
-    ];
-    final slab = corners.map(camera.project).toList();
-    final slabPaint = Paint()
-      ..color = const Color(0x403d8b95)
-      ..style = PaintingStyle.fill;
-    final slabOutline = Paint()
-      ..color = const Color(0xff5ebbc0)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-    final polygon = Path()..addPolygon(slab, true);
-    canvas.drawPath(polygon, slabPaint);
-    canvas.drawPath(polygon, slabOutline);
-
-    for (final entry in posts.entries) {
-      final paint = entry.key == selectedElement ? selectedPaint : columnPaint;
-      _line(canvas, camera, entry.value[0], entry.value[1], paint);
+    for (final element in elements) {
+      final selected = element.name == selectedElement;
+      switch (element.category) {
+        case 'column':
+          _line(
+            canvas,
+            camera,
+            _Vec3(element.x, element.y, element.z),
+            _Vec3(element.x, element.y, element.topZ),
+            selected ? selectedPaint : columnPaint,
+          );
+        case 'beam':
+          _line(
+            canvas,
+            camera,
+            _vec3(element.start),
+            _vec3(element.end),
+            selected ? selectedPaint : beamPaint,
+          );
+        case 'slab':
+          final points = element.boundary.map(_vec3).toList();
+          if (points.length >= 3) {
+            final polygon = Path()
+              ..addPolygon(points.map(camera.project).toList(), true);
+            canvas.drawPath(
+              polygon,
+              Paint()
+                ..color = selected
+                    ? const Color(0x704ee4dc)
+                    : const Color(0x403d8b95)
+                ..style = PaintingStyle.fill,
+            );
+            canvas.drawPath(
+              polygon,
+              Paint()
+                ..color = selected
+                    ? const Color(0xff62eee2)
+                    : const Color(0xff5ebbc0)
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = selected ? 2.2 : 1.2,
+            );
+            _label(
+              canvas,
+              '${element.name} · ${points.first.z.toStringAsFixed(2)} m',
+              camera.project(points.first) + const Offset(-14, -14),
+              const Color(0xff98d9d4),
+            );
+          }
+      }
     }
-    for (var i = 0; i < corners.length; i++) {
-      _line(
-        canvas,
-        camera,
-        corners[i],
-        corners[(i + 1) % corners.length],
-        beamPaint,
-      );
-    }
-    final lowerCorners = corners.map((p) => p.copyWith(z: 0)).toList();
-    for (var i = 0; i < lowerCorners.length; i++) {
-      _line(
-        canvas,
-        camera,
-        lowerCorners[i],
-        lowerCorners[(i + 1) % lowerCorners.length],
-        Paint()
-          ..color = const Color(0xff7a9da2)
-          ..strokeWidth = 2,
-      );
-    }
-    _label(
-      canvas,
-      'SLAB · 4.00 m',
-      camera.project(const _Vec3(-3.2, 2.2, 4)) + const Offset(-14, -14),
-      const Color(0xff98d9d4),
-    );
   }
 
   void _line(
@@ -308,6 +334,8 @@ class _EngineeringScenePainter extends CustomPainter {
   ) {
     canvas.drawLine(camera.project(a), camera.project(b), paint);
   }
+
+  _Vec3 _vec3(PointSnapshot point) => _Vec3(point.x, point.y, point.z);
 
   void _label(Canvas canvas, String text, Offset position, Color color) {
     final painter = TextPainter(
@@ -332,6 +360,7 @@ class _EngineeringScenePainter extends CustomPainter {
         oldDelegate.zoom != zoom ||
         oldDelegate.pan != pan ||
         oldDelegate.projection != projection ||
+        oldDelegate.snapshot != snapshot ||
         oldDelegate.selectedElement != selectedElement;
   }
 }

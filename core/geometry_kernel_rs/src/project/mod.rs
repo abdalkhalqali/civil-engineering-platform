@@ -51,6 +51,12 @@ pub const PROJECT_FORMAT_VERSION: u32 = 1;
 pub struct ProjectMetadata {
     /// Human-readable project name.
     pub name: String,
+    /// High-level project classification selected by the user.
+    #[serde(default)]
+    pub project_type: String,
+    /// Estimated site area in square metres.
+    #[serde(default)]
+    pub land_area_m2: f64,
     /// Optional description.
     #[serde(default)]
     pub description: String,
@@ -63,9 +69,20 @@ pub struct ProjectMetadata {
 impl ProjectMetadata {
     /// Creates metadata with the given name and `created_at = now`.
     pub fn new(name: impl Into<String>) -> Self {
+        Self::new_with_site(name, "مبنى إنشائي", 0.0)
+    }
+
+    /// Creates metadata with project classification and estimated site area.
+    pub fn new_with_site(
+        name: impl Into<String>,
+        project_type: impl Into<String>,
+        land_area_m2: f64,
+    ) -> Self {
         let now = Utc::now();
         Self {
             name: name.into(),
+            project_type: project_type.into(),
+            land_area_m2,
             description: String::new(),
             created_at: now,
             modified_at: now,
@@ -101,8 +118,17 @@ pub struct Project {
 impl Project {
     /// Creates a new project with a fresh engineering model.
     pub fn new(name: impl Into<String>) -> Self {
+        Self::new_with_site(name, "مبنى إنشائي", 0.0)
+    }
+
+    /// Creates a project with the user's site classification and area.
+    pub fn new_with_site(
+        name: impl Into<String>,
+        project_type: impl Into<String>,
+        land_area_m2: f64,
+    ) -> Self {
         Self {
-            metadata: ProjectMetadata::new(name),
+            metadata: ProjectMetadata::new_with_site(name, project_type, land_area_m2),
             model: EngineeringModel::new(),
         }
     }
@@ -130,6 +156,8 @@ impl Project {
             model_schema_version: self.model.schema_version,
             project_id: self.model.project_id.to_string(),
             name: self.metadata.name.clone(),
+            project_type: self.metadata.project_type.clone(),
+            land_area_m2: self.metadata.land_area_m2,
             revision: self.model.revision,
             levels: model_summary.levels,
             grids: model_summary.grids,
@@ -150,7 +178,7 @@ impl Project {
 /// This type is deliberately made of primitives only — no domain model data
 /// crosses the FFI boundary in this form. It exists so Flutter can display a
 /// project overview without receiving the full model.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ProjectSummary {
     /// File format version.
     pub format_version: u32,
@@ -160,6 +188,10 @@ pub struct ProjectSummary {
     pub project_id: String,
     /// Human-readable project name.
     pub name: String,
+    /// High-level project classification.
+    pub project_type: String,
+    /// Estimated site area in square metres.
+    pub land_area_m2: f64,
     /// Number of accepted mutations.
     pub revision: u64,
     /// Number of levels.

@@ -19,12 +19,29 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
   String _projectName = 'مشروع تجريبي';
   String _projectType = 'مبنى إنشائي';
   double _landArea = 1200;
+  WorkspaceSnapshot? _snapshot;
 
   static const _projectTypes = [
     'مبنى إنشائي',
     'جسر',
     'أعمال ترابية وتهيئة أرض',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.kernelReady) {
+      try {
+        _snapshot = createWorkspaceSnapshot(
+          name: _projectName,
+          projectType: _projectType,
+          landAreaM2: _landArea,
+        );
+      } catch (error) {
+        debugPrint('Initial workspace snapshot failed: $error');
+      }
+    }
+  }
 
   void _checkKernel() {
     try {
@@ -59,25 +76,37 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
     );
     if (draft == null || !mounted) return;
 
-    setState(() {
-      _projectName = draft.name;
-      _projectType = draft.type;
-      _landArea = draft.landArea;
-      _selectedElement = null;
-    });
-
     if (!widget.kernelReady) {
+      setState(() {
+        _projectName = draft.name;
+        _projectType = draft.type;
+        _landArea = draft.landArea;
+        _selectedElement = null;
+        _snapshot = null;
+      });
       _showMessage(
-        'تم تجهيز المشروع في الواجهة. اتصل بالنواة لحفظه في النموذج الهندسي.',
+        'تم تجهيز بيانات المشروع في الواجهة. اتصل بالنواة لإنشاء النموذج الهندسي.',
         error: true,
       );
       return;
     }
 
     try {
-      final summary = createProject(name: draft.name);
+      final snapshot = createWorkspaceSnapshot(
+        name: draft.name,
+        projectType: draft.type,
+        landAreaM2: draft.landArea,
+      );
+      setState(() {
+        _projectName = draft.name;
+        _projectType = draft.type;
+        _landArea = draft.landArea;
+        _selectedElement = null;
+        _snapshot = snapshot;
+      });
       _showMessage(
-        'تم إنشاء "${summary.name}" بنجاح · مساحة الأرض ${_formatArea(draft.landArea)} م²',
+        'تم إنشاء النموذج الهندسي لـ "${snapshot.projectName}" · '
+        '${snapshot.elements.length} عناصر إنشائية',
       );
     } catch (error) {
       _showMessage('تعذر إنشاء المشروع في النواة: $error', error: true);
@@ -252,6 +281,19 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
   }
 
   Widget _buildInspector() {
+    final snapshot = _snapshot;
+    final levels = snapshot?.levels ?? const <LevelSnapshot>[];
+    final grids = snapshot?.grids ?? const <GridSnapshot>[];
+    final elements = snapshot?.elements ?? const <ElementSnapshot>[];
+    final columns = elements
+        .where((element) => element.category == 'column')
+        .length;
+    final beams = elements
+        .where((element) => element.category == 'beam')
+        .length;
+    final slabs = elements
+        .where((element) => element.category == 'slab')
+        .length;
     return Container(
       width: 276,
       decoration: const BoxDecoration(
@@ -288,20 +330,27 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
           _treeSection(
             icon: Icons.layers_outlined,
             title: 'المستويات',
-            value: '2',
-            children: const ['Level 1  ·  0.00 m', 'Level 2  ·  4.00 m'],
+            value: '${levels.length}',
+            children: [
+              for (final level in levels)
+                '${level.name}  ·  ${level.elevationM.toStringAsFixed(2)} m',
+            ],
           ),
           _treeSection(
             icon: Icons.grid_4x4,
             title: 'الشبكات',
-            value: '4',
-            children: const ['A', 'B', '1', '2'],
+            value: '${grids.length}',
+            children: [for (final grid in grids) grid.name],
           ),
           _treeSection(
             icon: Icons.account_tree_outlined,
             title: 'العناصر الإنشائية',
-            value: '7',
-            children: const ['الأعمدة  ·  4', 'الكمرات  ·  4', 'البلاطة  ·  1'],
+            value: '${elements.length}',
+            children: [
+              'الأعمدة  ·  $columns',
+              'الكمرات  ·  $beams',
+              'البلاطات  ·  $slabs',
+            ],
           ),
           const SizedBox(height: 18),
           Container(
@@ -410,6 +459,7 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
           EngineeringViewport(
             interaction: _interaction,
             projection: _projection,
+            snapshot: _snapshot,
             onElementSelected: (element) {
               setState(() => _selectedElement = element);
             },

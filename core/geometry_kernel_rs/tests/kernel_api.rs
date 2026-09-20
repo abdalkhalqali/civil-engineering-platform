@@ -37,6 +37,45 @@ fn create_empty_model_is_independent_of_any_stored_model() {
 }
 
 #[test]
+fn create_workspace_snapshot_contains_real_model_geometry() {
+    let snapshot = api::create_workspace_snapshot(
+        "Snapshot Test".to_string(),
+        "مبنى إنشائي".to_string(),
+        1200.0,
+    );
+
+    assert_eq!(snapshot.project_name, "Snapshot Test");
+    assert_eq!(snapshot.project_type, "مبنى إنشائي");
+    assert_eq!(snapshot.land_area_m2, 1200.0);
+    assert_eq!(snapshot.levels.len(), 2);
+    assert_eq!(snapshot.grids.len(), 4);
+    assert_eq!(snapshot.elements.len(), 9);
+    assert_eq!(
+        snapshot
+            .elements
+            .iter()
+            .filter(|element| element.category == "column")
+            .count(),
+        4
+    );
+    assert_eq!(
+        snapshot
+            .elements
+            .iter()
+            .filter(|element| element.category == "beam")
+            .count(),
+        4
+    );
+    let slab = snapshot
+        .elements
+        .iter()
+        .find(|element| element.category == "slab")
+        .expect("starter slab is present");
+    assert_eq!(slab.boundary.len(), 4);
+    assert_eq!(slab.boundary[0].z, 4.0);
+}
+
+#[test]
 fn four_hundred_millimetres_is_stored_as_zero_point_four_metres() {
     let section = CrossSection::rectangular(
         "400x400",

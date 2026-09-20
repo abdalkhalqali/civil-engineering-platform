@@ -36,9 +36,6 @@ void main() {
   });
 
   test('two empty models are two distinct projects', () {
-    expect(
-      createEmptyModel().projectId,
-      isNot(createEmptyModel().projectId),
-    );
+    expect(createEmptyModel().projectId, isNot(createEmptyModel().projectId));
   });
 }

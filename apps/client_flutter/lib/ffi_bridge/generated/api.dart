@@ -10,6 +10,9 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 import 'project.dart';
 
+// These functions are ignored because they are not marked as `pub`: `element_snapshot`, `point_snapshot`, `starter_project`, `workspace_snapshot`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+
 /// M0 proof of concept, kept working verbatim: returns a status string that Flutter
 /// displays on screen.
 String getKernelStatus() => RustLib.instance.api.crateApiGetKernelStatus();
@@ -28,3 +31,208 @@ ModelSummary createEmptyModel() =>
 /// persistence layer is reachable through the bridge.
 ProjectSummary createProject({required String name}) =>
     RustLib.instance.api.crateApiCreateProject(name: name);
+
+/// Creates a real starter project and returns a read-only rendering snapshot.
+///
+/// The starter contains levels, grids, a concrete material, a reusable section,
+/// four columns, four beams and one slab. It is intentionally created in the
+/// engineering model so the viewport is derived from model data from the first frame.
+WorkspaceSnapshot createWorkspaceSnapshot({
+  required String name,
+  required String projectType,
+  required double landAreaM2,
+}) => RustLib.instance.api.crateApiCreateWorkspaceSnapshot(
+  name: name,
+  projectType: projectType,
+  landAreaM2: landAreaM2,
+);
+
+class ElementSnapshot {
+  final String id;
+  final String name;
+  final String category;
+  final double x;
+  final double y;
+  final double z;
+  final double topZ;
+  final double width;
+  final double depth;
+  final double thickness;
+  final PointSnapshot start;
+  final PointSnapshot end;
+  final List<PointSnapshot> boundary;
+
+  const ElementSnapshot({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.x,
+    required this.y,
+    required this.z,
+    required this.topZ,
+    required this.width,
+    required this.depth,
+    required this.thickness,
+    required this.start,
+    required this.end,
+    required this.boundary,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      name.hashCode ^
+      category.hashCode ^
+      x.hashCode ^
+      y.hashCode ^
+      z.hashCode ^
+      topZ.hashCode ^
+      width.hashCode ^
+      depth.hashCode ^
+      thickness.hashCode ^
+      start.hashCode ^
+      end.hashCode ^
+      boundary.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ElementSnapshot &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          category == other.category &&
+          x == other.x &&
+          y == other.y &&
+          z == other.z &&
+          topZ == other.topZ &&
+          width == other.width &&
+          depth == other.depth &&
+          thickness == other.thickness &&
+          start == other.start &&
+          end == other.end &&
+          boundary == other.boundary;
+}
+
+class GridSnapshot {
+  final String id;
+  final String name;
+  final String direction;
+  final double offsetM;
+
+  const GridSnapshot({
+    required this.id,
+    required this.name,
+    required this.direction,
+    required this.offsetM,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^ name.hashCode ^ direction.hashCode ^ offsetM.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GridSnapshot &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          direction == other.direction &&
+          offsetM == other.offsetM;
+}
+
+class LevelSnapshot {
+  final String id;
+  final String name;
+  final double elevationM;
+
+  const LevelSnapshot({
+    required this.id,
+    required this.name,
+    required this.elevationM,
+  });
+
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode ^ elevationM.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LevelSnapshot &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          elevationM == other.elevationM;
+}
+
+class PointSnapshot {
+  final double x;
+  final double y;
+  final double z;
+
+  const PointSnapshot({required this.x, required this.y, required this.z});
+
+  @override
+  int get hashCode => x.hashCode ^ y.hashCode ^ z.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PointSnapshot &&
+          runtimeType == other.runtimeType &&
+          x == other.x &&
+          y == other.y &&
+          z == other.z;
+}
+
+/// Flat, render-oriented data derived from the engineering model.
+///
+/// This is a read-only projection for Flutter. The model and all mutations remain in
+/// Rust; the renderer never becomes the source of truth.
+class WorkspaceSnapshot {
+  final String projectId;
+  final String projectName;
+  final String projectType;
+  final double landAreaM2;
+  final BigInt revision;
+  final List<LevelSnapshot> levels;
+  final List<GridSnapshot> grids;
+  final List<ElementSnapshot> elements;
+
+  const WorkspaceSnapshot({
+    required this.projectId,
+    required this.projectName,
+    required this.projectType,
+    required this.landAreaM2,
+    required this.revision,
+    required this.levels,
+    required this.grids,
+    required this.elements,
+  });
+
+  @override
+  int get hashCode =>
+      projectId.hashCode ^
+      projectName.hashCode ^
+      projectType.hashCode ^
+      landAreaM2.hashCode ^
+      revision.hashCode ^
+      levels.hashCode ^
+      grids.hashCode ^
+      elements.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WorkspaceSnapshot &&
+          runtimeType == other.runtimeType &&
+          projectId == other.projectId &&
+          projectName == other.projectName &&
+          projectType == other.projectType &&
+          landAreaM2 == other.landAreaM2 &&
+          revision == other.revision &&
+          levels == other.levels &&
+          grids == other.grids &&
+          elements == other.elements;
+}

@@ -72,7 +72,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 313293748;
+  int get rustContentHash => 2017537473;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -87,6 +87,12 @@ abstract class RustLibApi extends BaseApi {
   ModelSummary crateApiCreateEmptyModel();
 
   ProjectSummary crateApiCreateProject({required String name});
+
+  WorkspaceSnapshot crateApiCreateWorkspaceSnapshot({
+    required String name,
+    required String projectType,
+    required double landAreaM2,
+  });
 
   String crateApiGetKernelStatus();
 
@@ -147,12 +153,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "create_project", argNames: ["name"]);
 
   @override
+  WorkspaceSnapshot crateApiCreateWorkspaceSnapshot({
+    required String name,
+    required String projectType,
+    required double landAreaM2,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(name, serializer);
+          sse_encode_String(projectType, serializer);
+          sse_encode_f_64(landAreaM2, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_workspace_snapshot,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiCreateWorkspaceSnapshotConstMeta,
+        argValues: [name, projectType, landAreaM2],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiCreateWorkspaceSnapshotConstMeta =>
+      const TaskConstMeta(
+        debugName: "create_workspace_snapshot",
+        argNames: ["name", "projectType", "landAreaM2"],
+      );
+
+  @override
   String crateApiGetKernelStatus() {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -177,7 +215,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 4,
+            funcId: 5,
             port: port_,
           );
         },
@@ -199,6 +237,86 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as String;
+  }
+
+  @protected
+  ElementSnapshot dco_decode_element_snapshot(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 13)
+      throw Exception('unexpected arr length: expect 13 but see ${arr.length}');
+    return ElementSnapshot(
+      id: dco_decode_String(arr[0]),
+      name: dco_decode_String(arr[1]),
+      category: dco_decode_String(arr[2]),
+      x: dco_decode_f_64(arr[3]),
+      y: dco_decode_f_64(arr[4]),
+      z: dco_decode_f_64(arr[5]),
+      topZ: dco_decode_f_64(arr[6]),
+      width: dco_decode_f_64(arr[7]),
+      depth: dco_decode_f_64(arr[8]),
+      thickness: dco_decode_f_64(arr[9]),
+      start: dco_decode_point_snapshot(arr[10]),
+      end: dco_decode_point_snapshot(arr[11]),
+      boundary: dco_decode_list_point_snapshot(arr[12]),
+    );
+  }
+
+  @protected
+  double dco_decode_f_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as double;
+  }
+
+  @protected
+  GridSnapshot dco_decode_grid_snapshot(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return GridSnapshot(
+      id: dco_decode_String(arr[0]),
+      name: dco_decode_String(arr[1]),
+      direction: dco_decode_String(arr[2]),
+      offsetM: dco_decode_f_64(arr[3]),
+    );
+  }
+
+  @protected
+  LevelSnapshot dco_decode_level_snapshot(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return LevelSnapshot(
+      id: dco_decode_String(arr[0]),
+      name: dco_decode_String(arr[1]),
+      elevationM: dco_decode_f_64(arr[2]),
+    );
+  }
+
+  @protected
+  List<ElementSnapshot> dco_decode_list_element_snapshot(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_element_snapshot).toList();
+  }
+
+  @protected
+  List<GridSnapshot> dco_decode_list_grid_snapshot(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_grid_snapshot).toList();
+  }
+
+  @protected
+  List<LevelSnapshot> dco_decode_list_level_snapshot(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_level_snapshot).toList();
+  }
+
+  @protected
+  List<PointSnapshot> dco_decode_list_point_snapshot(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_point_snapshot).toList();
   }
 
   @protected
@@ -226,22 +344,37 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PointSnapshot dco_decode_point_snapshot(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return PointSnapshot(
+      x: dco_decode_f_64(arr[0]),
+      y: dco_decode_f_64(arr[1]),
+      z: dco_decode_f_64(arr[2]),
+    );
+  }
+
+  @protected
   ProjectSummary dco_decode_project_summary(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 10)
-      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
+    if (arr.length != 12)
+      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
     return ProjectSummary(
       formatVersion: dco_decode_u_32(arr[0]),
       modelSchemaVersion: dco_decode_u_32(arr[1]),
       projectId: dco_decode_String(arr[2]),
       name: dco_decode_String(arr[3]),
-      revision: dco_decode_u_64(arr[4]),
-      levels: dco_decode_u_32(arr[5]),
-      grids: dco_decode_u_32(arr[6]),
-      materials: dco_decode_u_32(arr[7]),
-      crossSections: dco_decode_u_32(arr[8]),
-      elements: dco_decode_u_32(arr[9]),
+      projectType: dco_decode_String(arr[4]),
+      landAreaM2: dco_decode_f_64(arr[5]),
+      revision: dco_decode_u_64(arr[6]),
+      levels: dco_decode_u_32(arr[7]),
+      grids: dco_decode_u_32(arr[8]),
+      materials: dco_decode_u_32(arr[9]),
+      crossSections: dco_decode_u_32(arr[10]),
+      elements: dco_decode_u_32(arr[11]),
     );
   }
 
@@ -270,10 +403,151 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  WorkspaceSnapshot dco_decode_workspace_snapshot(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    return WorkspaceSnapshot(
+      projectId: dco_decode_String(arr[0]),
+      projectName: dco_decode_String(arr[1]),
+      projectType: dco_decode_String(arr[2]),
+      landAreaM2: dco_decode_f_64(arr[3]),
+      revision: dco_decode_u_64(arr[4]),
+      levels: dco_decode_list_level_snapshot(arr[5]),
+      grids: dco_decode_list_grid_snapshot(arr[6]),
+      elements: dco_decode_list_element_snapshot(arr[7]),
+    );
+  }
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_prim_u_8_strict(deserializer);
     return utf8.decoder.convert(inner);
+  }
+
+  @protected
+  ElementSnapshot sse_decode_element_snapshot(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_category = sse_decode_String(deserializer);
+    var var_x = sse_decode_f_64(deserializer);
+    var var_y = sse_decode_f_64(deserializer);
+    var var_z = sse_decode_f_64(deserializer);
+    var var_topZ = sse_decode_f_64(deserializer);
+    var var_width = sse_decode_f_64(deserializer);
+    var var_depth = sse_decode_f_64(deserializer);
+    var var_thickness = sse_decode_f_64(deserializer);
+    var var_start = sse_decode_point_snapshot(deserializer);
+    var var_end = sse_decode_point_snapshot(deserializer);
+    var var_boundary = sse_decode_list_point_snapshot(deserializer);
+    return ElementSnapshot(
+      id: var_id,
+      name: var_name,
+      category: var_category,
+      x: var_x,
+      y: var_y,
+      z: var_z,
+      topZ: var_topZ,
+      width: var_width,
+      depth: var_depth,
+      thickness: var_thickness,
+      start: var_start,
+      end: var_end,
+      boundary: var_boundary,
+    );
+  }
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getFloat64();
+  }
+
+  @protected
+  GridSnapshot sse_decode_grid_snapshot(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_direction = sse_decode_String(deserializer);
+    var var_offsetM = sse_decode_f_64(deserializer);
+    return GridSnapshot(
+      id: var_id,
+      name: var_name,
+      direction: var_direction,
+      offsetM: var_offsetM,
+    );
+  }
+
+  @protected
+  LevelSnapshot sse_decode_level_snapshot(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_elevationM = sse_decode_f_64(deserializer);
+    return LevelSnapshot(
+      id: var_id,
+      name: var_name,
+      elevationM: var_elevationM,
+    );
+  }
+
+  @protected
+  List<ElementSnapshot> sse_decode_list_element_snapshot(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ElementSnapshot>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_element_snapshot(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<GridSnapshot> sse_decode_list_grid_snapshot(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <GridSnapshot>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_grid_snapshot(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<LevelSnapshot> sse_decode_list_level_snapshot(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <LevelSnapshot>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_level_snapshot(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<PointSnapshot> sse_decode_list_point_snapshot(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <PointSnapshot>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_point_snapshot(deserializer));
+    }
+    return ans_;
   }
 
   @protected
@@ -307,12 +581,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PointSnapshot sse_decode_point_snapshot(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_x = sse_decode_f_64(deserializer);
+    var var_y = sse_decode_f_64(deserializer);
+    var var_z = sse_decode_f_64(deserializer);
+    return PointSnapshot(x: var_x, y: var_y, z: var_z);
+  }
+
+  @protected
   ProjectSummary sse_decode_project_summary(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_formatVersion = sse_decode_u_32(deserializer);
     var var_modelSchemaVersion = sse_decode_u_32(deserializer);
     var var_projectId = sse_decode_String(deserializer);
     var var_name = sse_decode_String(deserializer);
+    var var_projectType = sse_decode_String(deserializer);
+    var var_landAreaM2 = sse_decode_f_64(deserializer);
     var var_revision = sse_decode_u_64(deserializer);
     var var_levels = sse_decode_u_32(deserializer);
     var var_grids = sse_decode_u_32(deserializer);
@@ -324,6 +609,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       modelSchemaVersion: var_modelSchemaVersion,
       projectId: var_projectId,
       name: var_name,
+      projectType: var_projectType,
+      landAreaM2: var_landAreaM2,
       revision: var_revision,
       levels: var_levels,
       grids: var_grids,
@@ -357,6 +644,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  WorkspaceSnapshot sse_decode_workspace_snapshot(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_projectId = sse_decode_String(deserializer);
+    var var_projectName = sse_decode_String(deserializer);
+    var var_projectType = sse_decode_String(deserializer);
+    var var_landAreaM2 = sse_decode_f_64(deserializer);
+    var var_revision = sse_decode_u_64(deserializer);
+    var var_levels = sse_decode_list_level_snapshot(deserializer);
+    var var_grids = sse_decode_list_grid_snapshot(deserializer);
+    var var_elements = sse_decode_list_element_snapshot(deserializer);
+    return WorkspaceSnapshot(
+      projectId: var_projectId,
+      projectName: var_projectName,
+      projectType: var_projectType,
+      landAreaM2: var_landAreaM2,
+      revision: var_revision,
+      levels: var_levels,
+      grids: var_grids,
+      elements: var_elements,
+    );
+  }
+
+  @protected
   int sse_decode_i_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getInt32();
@@ -372,6 +684,98 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_String(String self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
+  }
+
+  @protected
+  void sse_encode_element_snapshot(
+    ElementSnapshot self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.category, serializer);
+    sse_encode_f_64(self.x, serializer);
+    sse_encode_f_64(self.y, serializer);
+    sse_encode_f_64(self.z, serializer);
+    sse_encode_f_64(self.topZ, serializer);
+    sse_encode_f_64(self.width, serializer);
+    sse_encode_f_64(self.depth, serializer);
+    sse_encode_f_64(self.thickness, serializer);
+    sse_encode_point_snapshot(self.start, serializer);
+    sse_encode_point_snapshot(self.end, serializer);
+    sse_encode_list_point_snapshot(self.boundary, serializer);
+  }
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putFloat64(self);
+  }
+
+  @protected
+  void sse_encode_grid_snapshot(GridSnapshot self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.direction, serializer);
+    sse_encode_f_64(self.offsetM, serializer);
+  }
+
+  @protected
+  void sse_encode_level_snapshot(LevelSnapshot self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_f_64(self.elevationM, serializer);
+  }
+
+  @protected
+  void sse_encode_list_element_snapshot(
+    List<ElementSnapshot> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_element_snapshot(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_grid_snapshot(
+    List<GridSnapshot> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_grid_snapshot(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_level_snapshot(
+    List<LevelSnapshot> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_level_snapshot(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_point_snapshot(
+    List<PointSnapshot> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_point_snapshot(item, serializer);
+    }
   }
 
   @protected
@@ -398,6 +802,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_point_snapshot(PointSnapshot self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_f_64(self.x, serializer);
+    sse_encode_f_64(self.y, serializer);
+    sse_encode_f_64(self.z, serializer);
+  }
+
+  @protected
   void sse_encode_project_summary(
     ProjectSummary self,
     SseSerializer serializer,
@@ -407,6 +819,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_32(self.modelSchemaVersion, serializer);
     sse_encode_String(self.projectId, serializer);
     sse_encode_String(self.name, serializer);
+    sse_encode_String(self.projectType, serializer);
+    sse_encode_f_64(self.landAreaM2, serializer);
     sse_encode_u_64(self.revision, serializer);
     sse_encode_u_32(self.levels, serializer);
     sse_encode_u_32(self.grids, serializer);
@@ -436,6 +850,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_unit(void self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  void sse_encode_workspace_snapshot(
+    WorkspaceSnapshot self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.projectId, serializer);
+    sse_encode_String(self.projectName, serializer);
+    sse_encode_String(self.projectType, serializer);
+    sse_encode_f_64(self.landAreaM2, serializer);
+    sse_encode_u_64(self.revision, serializer);
+    sse_encode_list_level_snapshot(self.levels, serializer);
+    sse_encode_list_grid_snapshot(self.grids, serializer);
+    sse_encode_list_element_snapshot(self.elements, serializer);
   }
 
   @protected

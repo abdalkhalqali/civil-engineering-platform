@@ -25,6 +25,12 @@ class ProjectSummary {
   /// Human-readable project name.
   final String name;
 
+  /// High-level project classification.
+  final String projectType;
+
+  /// Estimated site area in square metres.
+  final double landAreaM2;
+
   /// Number of accepted mutations.
   final BigInt revision;
 
@@ -48,6 +54,8 @@ class ProjectSummary {
     required this.modelSchemaVersion,
     required this.projectId,
     required this.name,
+    required this.projectType,
+    required this.landAreaM2,
     required this.revision,
     required this.levels,
     required this.grids,
@@ -62,6 +70,8 @@ class ProjectSummary {
       modelSchemaVersion.hashCode ^
       projectId.hashCode ^
       name.hashCode ^
+      projectType.hashCode ^
+      landAreaM2.hashCode ^
       revision.hashCode ^
       levels.hashCode ^
       grids.hashCode ^
@@ -78,6 +88,8 @@ class ProjectSummary {
           modelSchemaVersion == other.modelSchemaVersion &&
           projectId == other.projectId &&
           name == other.name &&
+          projectType == other.projectType &&
+          landAreaM2 == other.landAreaM2 &&
           revision == other.revision &&
           levels == other.levels &&
           grids == other.grids &&

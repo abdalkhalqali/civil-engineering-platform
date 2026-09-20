@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 313293748;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 2017537473;
 
 // Section: executor
 
@@ -101,6 +101,42 @@ fn wire__crate__api__create_project_impl(
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let output_ok = Ok::<_, ()>(crate::api::create_project(api_name))?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__create_workspace_snapshot_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "create_workspace_snapshot",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_name = <String>::sse_decode(&mut deserializer);
+            let api_project_type = <String>::sse_decode(&mut deserializer);
+            let api_land_area_m2 = <f64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::create_workspace_snapshot(
+                    api_name,
+                    api_project_type,
+                    api_land_area_m2,
+                ))?;
                 std::result::Result::Ok(output_ok)
             })())
         },
@@ -180,6 +216,125 @@ impl SseDecode for String {
     }
 }
 
+impl SseDecode for crate::api::ElementSnapshot {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <String>::sse_decode(deserializer);
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_category = <String>::sse_decode(deserializer);
+        let mut var_x = <f64>::sse_decode(deserializer);
+        let mut var_y = <f64>::sse_decode(deserializer);
+        let mut var_z = <f64>::sse_decode(deserializer);
+        let mut var_topZ = <f64>::sse_decode(deserializer);
+        let mut var_width = <f64>::sse_decode(deserializer);
+        let mut var_depth = <f64>::sse_decode(deserializer);
+        let mut var_thickness = <f64>::sse_decode(deserializer);
+        let mut var_start = <crate::api::PointSnapshot>::sse_decode(deserializer);
+        let mut var_end = <crate::api::PointSnapshot>::sse_decode(deserializer);
+        let mut var_boundary = <Vec<crate::api::PointSnapshot>>::sse_decode(deserializer);
+        return crate::api::ElementSnapshot {
+            id: var_id,
+            name: var_name,
+            category: var_category,
+            x: var_x,
+            y: var_y,
+            z: var_z,
+            top_z: var_topZ,
+            width: var_width,
+            depth: var_depth,
+            thickness: var_thickness,
+            start: var_start,
+            end: var_end,
+            boundary: var_boundary,
+        };
+    }
+}
+
+impl SseDecode for f64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_f64::<NativeEndian>().unwrap()
+    }
+}
+
+impl SseDecode for crate::api::GridSnapshot {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <String>::sse_decode(deserializer);
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_direction = <String>::sse_decode(deserializer);
+        let mut var_offsetM = <f64>::sse_decode(deserializer);
+        return crate::api::GridSnapshot {
+            id: var_id,
+            name: var_name,
+            direction: var_direction,
+            offset_m: var_offsetM,
+        };
+    }
+}
+
+impl SseDecode for crate::api::LevelSnapshot {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <String>::sse_decode(deserializer);
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_elevationM = <f64>::sse_decode(deserializer);
+        return crate::api::LevelSnapshot {
+            id: var_id,
+            name: var_name,
+            elevation_m: var_elevationM,
+        };
+    }
+}
+
+impl SseDecode for Vec<crate::api::ElementSnapshot> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::ElementSnapshot>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::GridSnapshot> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::GridSnapshot>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::LevelSnapshot> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::LevelSnapshot>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::PointSnapshot> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::PointSnapshot>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<u8> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -216,6 +371,20 @@ impl SseDecode for crate::model::summary::ModelSummary {
     }
 }
 
+impl SseDecode for crate::api::PointSnapshot {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_x = <f64>::sse_decode(deserializer);
+        let mut var_y = <f64>::sse_decode(deserializer);
+        let mut var_z = <f64>::sse_decode(deserializer);
+        return crate::api::PointSnapshot {
+            x: var_x,
+            y: var_y,
+            z: var_z,
+        };
+    }
+}
+
 impl SseDecode for crate::project::ProjectSummary {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -223,6 +392,8 @@ impl SseDecode for crate::project::ProjectSummary {
         let mut var_modelSchemaVersion = <u32>::sse_decode(deserializer);
         let mut var_projectId = <String>::sse_decode(deserializer);
         let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_projectType = <String>::sse_decode(deserializer);
+        let mut var_landAreaM2 = <f64>::sse_decode(deserializer);
         let mut var_revision = <u64>::sse_decode(deserializer);
         let mut var_levels = <u32>::sse_decode(deserializer);
         let mut var_grids = <u32>::sse_decode(deserializer);
@@ -234,6 +405,8 @@ impl SseDecode for crate::project::ProjectSummary {
             model_schema_version: var_modelSchemaVersion,
             project_id: var_projectId,
             name: var_name,
+            project_type: var_projectType,
+            land_area_m2: var_landAreaM2,
             revision: var_revision,
             levels: var_levels,
             grids: var_grids,
@@ -270,6 +443,30 @@ impl SseDecode for () {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {}
 }
 
+impl SseDecode for crate::api::WorkspaceSnapshot {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_projectId = <String>::sse_decode(deserializer);
+        let mut var_projectName = <String>::sse_decode(deserializer);
+        let mut var_projectType = <String>::sse_decode(deserializer);
+        let mut var_landAreaM2 = <f64>::sse_decode(deserializer);
+        let mut var_revision = <u64>::sse_decode(deserializer);
+        let mut var_levels = <Vec<crate::api::LevelSnapshot>>::sse_decode(deserializer);
+        let mut var_grids = <Vec<crate::api::GridSnapshot>>::sse_decode(deserializer);
+        let mut var_elements = <Vec<crate::api::ElementSnapshot>>::sse_decode(deserializer);
+        return crate::api::WorkspaceSnapshot {
+            project_id: var_projectId,
+            project_name: var_projectName,
+            project_type: var_projectType,
+            land_area_m2: var_landAreaM2,
+            revision: var_revision,
+            levels: var_levels,
+            grids: var_grids,
+            elements: var_elements,
+        };
+    }
+}
+
 impl SseDecode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -293,7 +490,7 @@ fn pde_ffi_dispatcher_primary_impl(
 ) {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        4 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
+        5 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -308,13 +505,78 @@ fn pde_ffi_dispatcher_sync_impl(
     match func_id {
         1 => wire__crate__api__create_empty_model_impl(ptr, rust_vec_len, data_len),
         2 => wire__crate__api__create_project_impl(ptr, rust_vec_len, data_len),
-        3 => wire__crate__api__get_kernel_status_impl(ptr, rust_vec_len, data_len),
+        3 => wire__crate__api__create_workspace_snapshot_impl(ptr, rust_vec_len, data_len),
+        4 => wire__crate__api__get_kernel_status_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
 
 // Section: rust2dart
 
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::ElementSnapshot {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.category.into_into_dart().into_dart(),
+            self.x.into_into_dart().into_dart(),
+            self.y.into_into_dart().into_dart(),
+            self.z.into_into_dart().into_dart(),
+            self.top_z.into_into_dart().into_dart(),
+            self.width.into_into_dart().into_dart(),
+            self.depth.into_into_dart().into_dart(),
+            self.thickness.into_into_dart().into_dart(),
+            self.start.into_into_dart().into_dart(),
+            self.end.into_into_dart().into_dart(),
+            self.boundary.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::ElementSnapshot {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::ElementSnapshot>
+    for crate::api::ElementSnapshot
+{
+    fn into_into_dart(self) -> crate::api::ElementSnapshot {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::GridSnapshot {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.direction.into_into_dart().into_dart(),
+            self.offset_m.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::GridSnapshot {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::GridSnapshot> for crate::api::GridSnapshot {
+    fn into_into_dart(self) -> crate::api::GridSnapshot {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::LevelSnapshot {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.elevation_m.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::LevelSnapshot {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::LevelSnapshot> for crate::api::LevelSnapshot {
+    fn into_into_dart(self) -> crate::api::LevelSnapshot {
+        self
+    }
+}
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::model::summary::ModelSummary {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
@@ -343,6 +605,23 @@ impl flutter_rust_bridge::IntoIntoDart<crate::model::summary::ModelSummary>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::PointSnapshot {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.x.into_into_dart().into_dart(),
+            self.y.into_into_dart().into_dart(),
+            self.z.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::PointSnapshot {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::PointSnapshot> for crate::api::PointSnapshot {
+    fn into_into_dart(self) -> crate::api::PointSnapshot {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::project::ProjectSummary {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -350,6 +629,8 @@ impl flutter_rust_bridge::IntoDart for crate::project::ProjectSummary {
             self.model_schema_version.into_into_dart().into_dart(),
             self.project_id.into_into_dart().into_dart(),
             self.name.into_into_dart().into_dart(),
+            self.project_type.into_into_dart().into_dart(),
+            self.land_area_m2.into_into_dart().into_dart(),
             self.revision.into_into_dart().into_dart(),
             self.levels.into_into_dart().into_dart(),
             self.grids.into_into_dart().into_dart(),
@@ -371,11 +652,120 @@ impl flutter_rust_bridge::IntoIntoDart<crate::project::ProjectSummary>
         self
     }
 }
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::WorkspaceSnapshot {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.project_id.into_into_dart().into_dart(),
+            self.project_name.into_into_dart().into_dart(),
+            self.project_type.into_into_dart().into_dart(),
+            self.land_area_m2.into_into_dart().into_dart(),
+            self.revision.into_into_dart().into_dart(),
+            self.levels.into_into_dart().into_dart(),
+            self.grids.into_into_dart().into_dart(),
+            self.elements.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::WorkspaceSnapshot {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::WorkspaceSnapshot>
+    for crate::api::WorkspaceSnapshot
+{
+    fn into_into_dart(self) -> crate::api::WorkspaceSnapshot {
+        self
+    }
+}
 
 impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Vec<u8>>::sse_encode(self.into_bytes(), serializer);
+    }
+}
+
+impl SseEncode for crate::api::ElementSnapshot {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.id, serializer);
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.category, serializer);
+        <f64>::sse_encode(self.x, serializer);
+        <f64>::sse_encode(self.y, serializer);
+        <f64>::sse_encode(self.z, serializer);
+        <f64>::sse_encode(self.top_z, serializer);
+        <f64>::sse_encode(self.width, serializer);
+        <f64>::sse_encode(self.depth, serializer);
+        <f64>::sse_encode(self.thickness, serializer);
+        <crate::api::PointSnapshot>::sse_encode(self.start, serializer);
+        <crate::api::PointSnapshot>::sse_encode(self.end, serializer);
+        <Vec<crate::api::PointSnapshot>>::sse_encode(self.boundary, serializer);
+    }
+}
+
+impl SseEncode for f64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_f64::<NativeEndian>(self).unwrap();
+    }
+}
+
+impl SseEncode for crate::api::GridSnapshot {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.id, serializer);
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.direction, serializer);
+        <f64>::sse_encode(self.offset_m, serializer);
+    }
+}
+
+impl SseEncode for crate::api::LevelSnapshot {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.id, serializer);
+        <String>::sse_encode(self.name, serializer);
+        <f64>::sse_encode(self.elevation_m, serializer);
+    }
+}
+
+impl SseEncode for Vec<crate::api::ElementSnapshot> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::ElementSnapshot>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::GridSnapshot> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::GridSnapshot>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::LevelSnapshot> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::LevelSnapshot>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::PointSnapshot> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::PointSnapshot>::sse_encode(item, serializer);
+        }
     }
 }
 
@@ -403,6 +793,15 @@ impl SseEncode for crate::model::summary::ModelSummary {
     }
 }
 
+impl SseEncode for crate::api::PointSnapshot {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <f64>::sse_encode(self.x, serializer);
+        <f64>::sse_encode(self.y, serializer);
+        <f64>::sse_encode(self.z, serializer);
+    }
+}
+
 impl SseEncode for crate::project::ProjectSummary {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -410,6 +809,8 @@ impl SseEncode for crate::project::ProjectSummary {
         <u32>::sse_encode(self.model_schema_version, serializer);
         <String>::sse_encode(self.project_id, serializer);
         <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.project_type, serializer);
+        <f64>::sse_encode(self.land_area_m2, serializer);
         <u64>::sse_encode(self.revision, serializer);
         <u32>::sse_encode(self.levels, serializer);
         <u32>::sse_encode(self.grids, serializer);
@@ -443,6 +844,20 @@ impl SseEncode for u8 {
 impl SseEncode for () {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {}
+}
+
+impl SseEncode for crate::api::WorkspaceSnapshot {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.project_id, serializer);
+        <String>::sse_encode(self.project_name, serializer);
+        <String>::sse_encode(self.project_type, serializer);
+        <f64>::sse_encode(self.land_area_m2, serializer);
+        <u64>::sse_encode(self.revision, serializer);
+        <Vec<crate::api::LevelSnapshot>>::sse_encode(self.levels, serializer);
+        <Vec<crate::api::GridSnapshot>>::sse_encode(self.grids, serializer);
+        <Vec<crate::api::ElementSnapshot>>::sse_encode(self.elements, serializer);
+    }
 }
 
 impl SseEncode for i32 {
