@@ -24,6 +24,7 @@ void main() {
 
     expect(find.text('مساحة العمل الهندسية'), findsNothing);
     expect(find.byIcon(Icons.create_new_folder_outlined), findsOneWidget);
+    expect(find.text('لوحة الخصائص'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

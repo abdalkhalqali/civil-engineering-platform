@@ -10,7 +10,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 import 'project.dart';
 
-// These functions are ignored because they are not marked as `pub`: `element_snapshot`, `point_snapshot`, `starter_project`, `workspace_snapshot`
+// These functions are ignored because they are not marked as `pub`: `current_project`, `element_snapshot`, `point_snapshot`, `starter_project`, `workspace_snapshot`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// M0 proof of concept, kept working verbatim: returns a status string that Flutter
@@ -45,6 +45,28 @@ WorkspaceSnapshot createWorkspaceSnapshot({
   name: name,
   projectType: projectType,
   landAreaM2: landAreaM2,
+);
+
+/// Adds a parametric column to the active project and returns a fresh derived snapshot.
+///
+/// The column is stored in the Rust engineering model and the Flutter viewport only
+/// receives the resulting projection.
+WorkspaceSnapshot addColumnToWorkspace({
+  required double xM,
+  required double yM,
+}) => RustLib.instance.api.crateApiAddColumnToWorkspace(xM: xM, yM: yM);
+
+/// Adds a parametric beam to the active project and returns a fresh derived snapshot.
+WorkspaceSnapshot addBeamToWorkspace({
+  required double startXM,
+  required double startYM,
+  required double endXM,
+  required double endYM,
+}) => RustLib.instance.api.crateApiAddBeamToWorkspace(
+  startXM: startXM,
+  startYM: startYM,
+  endXM: endXM,
+  endYM: endYM,
 );
 
 class ElementSnapshot {

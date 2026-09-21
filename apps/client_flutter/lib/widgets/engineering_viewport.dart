@@ -15,6 +15,7 @@ class EngineeringViewport extends StatefulWidget {
     required this.projection,
     required this.snapshot,
     required this.onElementSelected,
+    this.onGroundPointSelected,
     this.hiddenCategories = const <String>{},
     this.showGrid = true,
     this.resetToken = 0,
@@ -25,6 +26,7 @@ class EngineeringViewport extends StatefulWidget {
   final ViewportProjection projection;
   final WorkspaceSnapshot? snapshot;
   final ValueChanged<String> onElementSelected;
+  final ValueChanged<Offset>? onGroundPointSelected;
   final Set<String> hiddenCategories;
   final bool showGrid;
   final int resetToken;
@@ -96,7 +98,24 @@ class _EngineeringViewportState extends State<EngineeringViewport> {
         onTapUp: (details) {
           final hit = _pickElement(details.localPosition, context.size);
           setState(() => _selected = hit);
-          if (hit != null) widget.onElementSelected(hit);
+          if (hit != null) {
+            widget.onElementSelected(hit);
+          } else {
+            final size = context.size;
+            if (size != null) {
+              final camera = _SceneCamera(
+                size: size,
+                yaw: _yaw,
+                pitch: _pitch,
+                zoom: _zoom,
+                pan: _pan,
+                projection: widget.projection,
+              );
+              widget.onGroundPointSelected?.call(
+                camera.groundPoint(details.localPosition),
+              );
+            }
+          }
         },
         child: CustomPaint(
           painter: _EngineeringScenePainter(
@@ -432,6 +451,20 @@ class _SceneCamera {
     return Offset(
       size.width / 2 + pan.dx + horizontal * scale,
       size.height / 2 + pan.dy - vertical * scale,
+    );
+  }
+
+  Offset groundPoint(Offset screenPoint) {
+    final baseScale = math.min(size.width, size.height) * .062 * zoom;
+    final horizontal = (screenPoint.dx - size.width / 2 - pan.dx) / baseScale;
+    final vertical = -(screenPoint.dy - size.height / 2 - pan.dy) / baseScale;
+    final sinPitch = math.sin(pitch);
+    final depth = sinPitch.abs() < .001 ? 0.0 : vertical / -sinPitch;
+    final cosYaw = math.cos(yaw);
+    final sinYaw = math.sin(yaw);
+    return Offset(
+      horizontal * cosYaw + depth * sinYaw,
+      -horizontal * sinYaw + depth * cosYaw,
     );
   }
 }

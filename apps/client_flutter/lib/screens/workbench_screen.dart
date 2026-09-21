@@ -20,19 +20,45 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
   ModelingTool _activeTool = ModelingTool.select;
   String? _selectedElement;
   String _projectName = 'مشروع تجريبي';
-  String _projectType = 'مبنى إنشائي';
+  String _projectType = 'مبنى سكني';
+  String _structuralSystem = 'إطارات خرسانية';
+  String _gridPreset = 'شبكة إنشائية قياسية';
+  int _levelCount = 2;
   String _displayUnit = 'm';
   double _landArea = 1200;
   WorkspaceSnapshot? _snapshot;
   final Set<String> _hiddenCategories = <String>{};
   bool _showGrid = true;
   bool _projectDirty = false;
+  bool _mobileInspectorOpen = false;
+  Offset? _pendingBeamStart;
   int _viewResetToken = 0;
 
   static const _projectTypes = [
-    'مبنى إنشائي',
+    'مبنى سكني',
+    'مبنى تجاري',
+    'مبنى إداري',
+    'مبنى صناعي',
+    'مبنى تعليمي',
+    'مبنى صحي',
     'جسر',
+    'طريق وشبكات بنية تحتية',
     'أعمال ترابية وتهيئة أرض',
+    'منشأة مائية',
+    'مشروع مختلط',
+  ];
+
+  static const _structuralSystems = [
+    'إطارات خرسانية',
+    'جدران قص وإطارات',
+    'هيكل معدني',
+    'منشأ مختلط',
+  ];
+
+  static const _gridPresets = [
+    'شبكة إنشائية قياسية',
+    'شبكة مخصصة',
+    'بدون شبكة ابتدائية',
   ];
 
   @override
@@ -82,11 +108,97 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
   }
 
   void _selectTool(ModelingTool tool) {
+    _pendingBeamStart = null;
     setState(() => _activeTool = tool);
     if (tool != ModelingTool.select) {
       _showMessage(
         '${_toolLabel(tool)}: اختر نقطة في المشهد لبدء الإدخال الهندسي.',
       );
+    }
+  }
+
+  void _handleGroundPointSelected(Offset point) {
+    if (_activeTool == ModelingTool.select) {
+      _showMessage(
+        'النقطة الهندسية: س ${point.dx.toStringAsFixed(2)} م · '
+        'ص ${point.dy.toStringAsFixed(2)} م',
+      );
+      return;
+    }
+    if (!widget.kernelReady || _snapshot == null) {
+      _showMessage('اتصل بالنواة الهندسية أولًا قبل إنشاء عنصر.', error: true);
+      return;
+    }
+    if (_activeTool == ModelingTool.column) {
+      _addColumnAt(point);
+    } else if (_activeTool == ModelingTool.beam) {
+      final start = _pendingBeamStart;
+      if (start == null) {
+        setState(() => _pendingBeamStart = point);
+        _showMessage(
+          'تم تثبيت بداية الكمرة. اختر نقطة النهاية الآن.',
+        );
+      } else {
+        _addBeamBetween(start, point);
+      }
+    } else {
+      _showMessage(
+        'أداة ${_toolLabel(_activeTool)} ظاهرة في الواجهة، '
+        'ويجري ربط أمرها الهندسي في المرحلة التالية.',
+      );
+    }
+  }
+
+  void _addColumnAt(Offset point) {
+    try {
+      final columnCount = _snapshot!.elements
+          .where((element) => element.category == 'column')
+          .length;
+      final expectedName = 'C-${(columnCount + 1).toString().padLeft(2, '0')}';
+      final snapshot = addColumnToWorkspace(xM: point.dx, yM: point.dy);
+      final added = snapshot.elements.firstWhere(
+        (element) => element.name == expectedName,
+      );
+      setState(() {
+        _snapshot = snapshot;
+        _selectedElement = added.name;
+        _projectDirty = true;
+        _activeTool = ModelingTool.select;
+      });
+      _showMessage(
+        'تم إنشاء العمود ${added.name} في '
+        '(${point.dx.toStringAsFixed(2)}، ${point.dy.toStringAsFixed(2)}) م.',
+      );
+    } catch (error) {
+      _showMessage('تعذر إنشاء العمود: $error', error: true);
+    }
+  }
+
+  void _addBeamBetween(Offset start, Offset end) {
+    try {
+      final beamCount = _snapshot!.elements
+          .where((element) => element.category == 'beam')
+          .length;
+      final expectedName = 'B-${(beamCount + 1).toString().padLeft(2, '0')}';
+      final snapshot = addBeamToWorkspace(
+        startXM: start.dx,
+        startYM: start.dy,
+        endXM: end.dx,
+        endYM: end.dy,
+      );
+      final added = snapshot.elements.firstWhere(
+        (element) => element.name == expectedName,
+      );
+      setState(() {
+        _snapshot = snapshot;
+        _selectedElement = added.name;
+        _projectDirty = true;
+        _activeTool = ModelingTool.select;
+        _pendingBeamStart = null;
+      });
+      _showMessage('تم رسم الكمرة ${added.name} بين النقطتين المحددتين.');
+    } catch (error) {
+      _showMessage('تعذر رسم الكمرة: $error', error: true);
     }
   }
 
@@ -128,10 +240,10 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
     setState(() {
       _selectedElement = element;
       _activeTool = ModelingTool.select;
+      if (MediaQuery.sizeOf(context).width < 940) {
+        _mobileInspectorOpen = true;
+      }
     });
-    if (MediaQuery.sizeOf(context).width < 940) {
-      _showMobileProperties();
-    }
   }
 
   void _toggleCategory(String category) {
@@ -140,22 +252,6 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
         _hiddenCategories.remove(category);
       }
     });
-  }
-
-  Future<void> _showMobileProperties() async {
-    final selected = _selectedSnapshot;
-    if (selected == null || !mounted) return;
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: const Color(0xff102635),
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-          child: _buildElementProperties(selected, compact: true),
-        ),
-      ),
-    );
   }
 
   void _saveProject() {
@@ -212,8 +308,13 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
       builder: (context) => _NewProjectDialog(
         initialName: _projectName,
         initialType: _projectType,
+        initialStructuralSystem: _structuralSystem,
+        initialGridPreset: _gridPreset,
+        initialLevelCount: _levelCount,
         initialLandArea: _landArea,
         projectTypes: _projectTypes,
+        structuralSystems: _structuralSystems,
+        gridPresets: _gridPresets,
       ),
     );
     if (draft == null || !mounted) return;
@@ -222,6 +323,9 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
       setState(() {
         _projectName = draft.name;
         _projectType = draft.type;
+        _structuralSystem = draft.structuralSystem;
+        _gridPreset = draft.gridPreset;
+        _levelCount = draft.levelCount;
         _landArea = draft.landArea;
         _selectedElement = null;
         _snapshot = null;
@@ -242,6 +346,9 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
       setState(() {
         _projectName = draft.name;
         _projectType = draft.type;
+        _structuralSystem = draft.structuralSystem;
+        _gridPreset = draft.gridPreset;
+        _levelCount = draft.levelCount;
         _landArea = draft.landArea;
         _selectedElement = null;
         _snapshot = snapshot;
@@ -276,6 +383,41 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final showInspector = constraints.maxWidth >= 940;
+                    if (!showInspector) {
+                      return Stack(
+                        children: [
+                          _buildViewport(),
+                          Positioned(
+                            top: 92,
+                            right: 14,
+                            child: _mobileInspectorButton(),
+                          ),
+                          if (_mobileInspectorOpen) ...[
+                            Positioned.fill(
+                              child: GestureDetector(
+                                onTap: () => setState(
+                                  () => _mobileInspectorOpen = false,
+                                ),
+                                child: Container(
+                                  color: const Color(0x99000000),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              bottom: 0,
+                              width: constraints.maxWidth < 360 ? 286 : 320,
+                              child: Material(
+                                color: const Color(0xff0b1d2c),
+                                elevation: 16,
+                                child: _buildInspector(),
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
+                    }
                     return Row(
                       children: [
                         if (showInspector) _buildInspector(),
@@ -453,6 +595,43 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
       child: IconButton(
         onPressed: onPressed,
         icon: Icon(icon, color: const Color(0xffb7cad6)),
+      ),
+    );
+  }
+
+  Widget _mobileInspectorButton() {
+    return Material(
+      color: const Color(0xdd102a3a),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: () => setState(
+          () => _mobileInspectorOpen = !_mobileInspectorOpen,
+        ),
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _mobileInspectorOpen
+                    ? Icons.close
+                    : Icons.view_sidebar_outlined,
+                color: const Color(0xff62eee2),
+                size: 18,
+              ),
+              const SizedBox(width: 7),
+              Text(
+                _mobileInspectorOpen ? 'إغلاق اللوحة' : 'لوحة الخصائص',
+                style: const TextStyle(
+                  color: Color(0xffd5e1e7),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -951,6 +1130,7 @@ class _WorkbenchScreenState extends State<WorkbenchScreen> {
             showGrid: _showGrid,
             resetToken: _viewResetToken,
             onElementSelected: _handleElementSelected,
+            onGroundPointSelected: _handleGroundPointSelected,
           ),
           Positioned(top: 16, right: 16, child: _viewportToolbar()),
           Positioned(top: 16, left: 16, child: _viewCube()),
@@ -1214,11 +1394,17 @@ class _ProjectDraft {
   const _ProjectDraft({
     required this.name,
     required this.type,
+    required this.structuralSystem,
+    required this.gridPreset,
+    required this.levelCount,
     required this.landArea,
   });
 
   final String name;
   final String type;
+  final String structuralSystem;
+  final String gridPreset;
+  final int levelCount;
   final double landArea;
 }
 
@@ -1226,14 +1412,24 @@ class _NewProjectDialog extends StatefulWidget {
   const _NewProjectDialog({
     required this.initialName,
     required this.initialType,
+    required this.initialStructuralSystem,
+    required this.initialGridPreset,
+    required this.initialLevelCount,
     required this.initialLandArea,
     required this.projectTypes,
+    required this.structuralSystems,
+    required this.gridPresets,
   });
 
   final String initialName;
   final String initialType;
+  final String initialStructuralSystem;
+  final String initialGridPreset;
+  final int initialLevelCount;
   final double initialLandArea;
   final List<String> projectTypes;
+  final List<String> structuralSystems;
+  final List<String> gridPresets;
 
   @override
   State<_NewProjectDialog> createState() => _NewProjectDialogState();
@@ -1243,6 +1439,9 @@ class _NewProjectDialogState extends State<_NewProjectDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _areaController;
   late String _selectedType;
+  late String _selectedStructuralSystem;
+  late String _selectedGridPreset;
+  late int _selectedLevelCount;
   String? _errorText;
 
   @override
@@ -1253,6 +1452,9 @@ class _NewProjectDialogState extends State<_NewProjectDialog> {
       text: widget.initialLandArea.toStringAsFixed(0),
     );
     _selectedType = widget.initialType;
+    _selectedStructuralSystem = widget.initialStructuralSystem;
+    _selectedGridPreset = widget.initialGridPreset;
+    _selectedLevelCount = widget.initialLevelCount;
   }
 
   @override
@@ -1273,8 +1475,16 @@ class _NewProjectDialogState extends State<_NewProjectDialog> {
       setState(() => _errorText = 'أدخل مساحة صحيحة أكبر من صفر.');
       return;
     }
-    Navigator.of(context)
-        .pop(_ProjectDraft(name: name, type: _selectedType, landArea: area));
+    Navigator.of(context).pop(
+      _ProjectDraft(
+        name: name,
+        type: _selectedType,
+        structuralSystem: _selectedStructuralSystem,
+        gridPreset: _selectedGridPreset,
+        levelCount: _selectedLevelCount,
+        landArea: area,
+      ),
+    );
   }
 
   @override
@@ -1302,7 +1512,8 @@ class _NewProjectDialogState extends State<_NewProjectDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'أدخل بيانات المشروع الأساسية للبدء في مساحة عمل جديدة.',
+                'حدد نوع المنشأة ونظامها الإنشائي وإعدادات النمذجة الأولية. '
+                'يمكن تعديل العناصر لاحقًا من مساحة العمل.',
                 style: TextStyle(color: Color(0xffa7bdc9), fontSize: 12),
               ),
               const SizedBox(height: 22),
@@ -1338,6 +1549,95 @@ class _NewProjectDialogState extends State<_NewProjectDialog> {
                 onChanged: (value) {
                   if (value != null) setState(() => _selectedType = value);
                 },
+              ),
+              const SizedBox(height: 14),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedStructuralSystem,
+                dropdownColor: const Color(0xff183344),
+                decoration: _inputDecoration(
+                  label: 'النظام الإنشائي',
+                  hint: '',
+                  icon: Icons.account_tree_outlined,
+                ),
+                items: [
+                  for (final system in widget.structuralSystems)
+                    DropdownMenuItem(
+                      value: system,
+                      child: Text(
+                        system,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _selectedStructuralSystem = value);
+                  }
+                },
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      initialValue: _selectedLevelCount,
+                      isExpanded: true,
+                      dropdownColor: const Color(0xff183344),
+                      decoration: _inputDecoration(
+                        label: 'عدد المستويات',
+                        hint: '',
+                        icon: Icons.layers_outlined,
+                      ),
+                      items: [
+                        for (var count = 1; count <= 12; count++)
+                          DropdownMenuItem(
+                            value: count,
+                            child: Text(
+                              '$count',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _selectedLevelCount = value);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _selectedGridPreset,
+                      isExpanded: true,
+                      dropdownColor: const Color(0xff183344),
+                      decoration: _inputDecoration(
+                        label: 'إعداد الشبكة',
+                        hint: '',
+                        icon: Icons.grid_4x4,
+                      ),
+                      items: [
+                        for (final preset in widget.gridPresets)
+                          DropdownMenuItem(
+                            value: preset,
+                            child: Text(
+                              preset,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _selectedGridPreset = value);
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 14),
               TextField(

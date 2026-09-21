@@ -72,7 +72,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 2017537473;
+  int get rustContentHash => -802627972;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -84,6 +84,18 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  WorkspaceSnapshot crateApiAddBeamToWorkspace({
+    required double startXM,
+    required double startYM,
+    required double endXM,
+    required double endYM,
+  });
+
+  WorkspaceSnapshot crateApiAddColumnToWorkspace({
+    required double xM,
+    required double yM,
+  });
+
   ModelSummary crateApiCreateEmptyModel();
 
   ProjectSummary crateApiCreateProject({required String name});
@@ -108,12 +120,75 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  WorkspaceSnapshot crateApiAddBeamToWorkspace({
+    required double startXM,
+    required double startYM,
+    required double endXM,
+    required double endYM,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_f_64(startXM, serializer);
+          sse_encode_f_64(startYM, serializer);
+          sse_encode_f_64(endXM, serializer);
+          sse_encode_f_64(endYM, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_workspace_snapshot,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiAddBeamToWorkspaceConstMeta,
+        argValues: [startXM, startYM, endXM, endYM],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiAddBeamToWorkspaceConstMeta => const TaskConstMeta(
+    debugName: "add_beam_to_workspace",
+    argNames: ["startXM", "startYM", "endXM", "endYM"],
+  );
+
+  @override
+  WorkspaceSnapshot crateApiAddColumnToWorkspace({
+    required double xM,
+    required double yM,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_f_64(xM, serializer);
+          sse_encode_f_64(yM, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_workspace_snapshot,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiAddColumnToWorkspaceConstMeta,
+        argValues: [xM, yM],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiAddColumnToWorkspaceConstMeta =>
+      const TaskConstMeta(
+        debugName: "add_column_to_workspace",
+        argNames: ["xM", "yM"],
+      );
+
+  @override
   ModelSummary crateApiCreateEmptyModel() {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_model_summary,
@@ -136,7 +211,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(name, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_project_summary,
@@ -165,7 +240,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_String(name, serializer);
           sse_encode_String(projectType, serializer);
           sse_encode_f_64(landAreaM2, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_workspace_snapshot,
@@ -190,7 +265,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -215,7 +290,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 7,
             port: port_,
           );
         },

@@ -21,6 +21,13 @@ use crate::math::{Point3D, Transform3D};
 use crate::model::{CrossSection, EngineeringModel, Grid, Level, Material, ModelSummary};
 use crate::project::{Project, ProjectSummary};
 use crate::units::Length;
+use std::sync::{Mutex, OnceLock};
+
+static CURRENT_PROJECT: OnceLock<Mutex<Option<Project>>> = OnceLock::new();
+
+fn current_project() -> &'static Mutex<Option<Project>> {
+    CURRENT_PROJECT.get_or_init(|| Mutex::new(None))
+}
 
 /// Flat, render-oriented data derived from the engineering model.
 ///
@@ -121,8 +128,124 @@ pub fn create_workspace_snapshot(
     project_type: String,
     land_area_m2: f64,
 ) -> WorkspaceSnapshot {
-    let project = starter_project(name, project_type, land_area_m2);
-    workspace_snapshot(&project)
+    let mut current = current_project()
+        .lock()
+        .expect("current project lock is not poisoned");
+    *current = Some(starter_project(name, project_type, land_area_m2));
+    workspace_snapshot(current.as_ref().expect("starter project was created"))
+}
+
+/// Adds a parametric column to the active project and returns a fresh derived snapshot.
+///
+/// The column is stored in the Rust engineering model and the Flutter viewport only
+/// receives the resulting projection.
+#[flutter_rust_bridge::frb(sync)]
+pub fn add_column_to_workspace(x_m: f64, y_m: f64) -> WorkspaceSnapshot {
+    let mut current = current_project()
+        .lock()
+        .expect("current project lock is not poisoned");
+    let project = current
+        .as_mut()
+        .expect("create_workspace_snapshot must be called first");
+    let model = &mut project.model;
+    let ground_id = model
+        .levels
+        .values()
+        .next()
+        .expect("starter project has a ground level")
+        .id;
+    let upper_id = model
+        .levels
+        .values()
+        .nth(1)
+        .expect("starter project has an upper level")
+        .id;
+    let material_id = model
+        .materials
+        .values()
+        .next()
+        .expect("starter project has a material")
+        .id;
+    let cross_section_id = model
+        .cross_sections
+        .values()
+        .next()
+        .expect("starter project has a cross section")
+        .id;
+    let number = model
+        .elements
+        .values()
+        .filter(|element| element.category() == ElementCategory::Column)
+        .count()
+        + 1;
+    let name = format!("C-{number:02}");
+    let base = BaseElement::new(ElementCategory::Column, name)
+        .with_transform(Transform3D::at(Point3D::from_meters(x_m, y_m, 0.0)));
+    model
+        .add_element(
+            StructuralColumn::new(base, ground_id, upper_id, cross_section_id, material_id).into(),
+        )
+        .expect("column references resolve");
+    project.metadata.touch();
+    workspace_snapshot(project)
+}
+
+/// Adds a parametric beam to the active project and returns a fresh derived snapshot.
+#[flutter_rust_bridge::frb(sync)]
+pub fn add_beam_to_workspace(
+    start_x_m: f64,
+    start_y_m: f64,
+    end_x_m: f64,
+    end_y_m: f64,
+) -> WorkspaceSnapshot {
+    let mut current = current_project()
+        .lock()
+        .expect("current project lock is not poisoned");
+    let project = current
+        .as_mut()
+        .expect("create_workspace_snapshot must be called first");
+    let model = &mut project.model;
+    let reference_level_id = model
+        .levels
+        .values()
+        .nth(1)
+        .expect("starter project has an upper level")
+        .id;
+    let material_id = model
+        .materials
+        .values()
+        .next()
+        .expect("starter project has a material")
+        .id;
+    let cross_section_id = model
+        .cross_sections
+        .values()
+        .next()
+        .expect("starter project has a cross section")
+        .id;
+    let number = model
+        .elements
+        .values()
+        .filter(|element| element.category() == ElementCategory::Beam)
+        .count()
+        + 1;
+    let name = format!("B-{number:02}");
+    let base = BaseElement::new(ElementCategory::Beam, name);
+    model
+        .add_element(
+            StructuralBeam::new(
+                base,
+                reference_level_id,
+                Point3D::from_meters(start_x_m, start_y_m, 4.0),
+                Point3D::from_meters(end_x_m, end_y_m, 4.0),
+                cross_section_id,
+                material_id,
+            )
+            .into(),
+        )
+        .expect("beam references resolve");
+    project.metadata.touch();
+    workspace_snapshot(project)
 }
 
 fn starter_project(name: String, project_type: String, land_area_m2: f64) -> Project {

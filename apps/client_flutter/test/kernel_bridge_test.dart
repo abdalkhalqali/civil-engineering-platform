@@ -38,4 +38,34 @@ void main() {
   test('two empty models are two distinct projects', () {
     expect(createEmptyModel().projectId, isNot(createEmptyModel().projectId));
   });
+
+  test('column and beam tools mutate the Rust engineering model', () {
+    final initial = createWorkspaceSnapshot(
+      name: 'اختبار الأدوات',
+      projectType: 'مبنى سكني',
+      landAreaM2: 500,
+    );
+    final withColumn = addColumnToWorkspace(xM: 0.0, yM: 0.0);
+    final withBeam = addBeamToWorkspace(
+      startXM: 0.0,
+      startYM: 0.0,
+      endXM: 3.0,
+      endYM: 0.0,
+    );
+
+    expect(
+      withColumn.elements.where((element) => element.category == 'column'),
+      hasLength(
+        initial.elements.where((element) => element.category == 'column').length +
+            1,
+      ),
+    );
+    expect(
+      withBeam.elements.where((element) => element.category == 'beam'),
+      hasLength(
+        withColumn.elements.where((element) => element.category == 'beam').length +
+            1,
+      ),
+    );
+  });
 }
