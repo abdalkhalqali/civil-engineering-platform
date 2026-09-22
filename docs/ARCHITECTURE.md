@@ -7,25 +7,27 @@ in [`ENGINEERING_MODEL.md`](./ENGINEERING_MODEL.md).
 ## System shape
 
 ```text
-Flutter app (apps/client_flutter)
-        │  flutter_rust_bridge v2 (generated, never hand edited)
-        ▼
-Rust geometry kernel (core/geometry_kernel_rs)
-        │
-        ▼
-Engineering Model  ← single source of truth
-        │
-        ├── 3D geometry        (later)
-        ├── 2D views           (later)
-        ├── analytical model   (later)
-        ├── quantities / BOQ   (later)
-        ├── reports            (later)
-        ├── BIM / IFC export   (later)
-        └── AI commands        (later)
+Flutter app (apps/client_flutter)        Browser workbench (web/)
+        │  flutter_rust_bridge v2                  │  wasm-bindgen
+        │  (generated, never hand edited)          │
+        └──────────────┬───────────────────────────┘
+                       ▼
+      Rust geometry kernel (core/geometry_kernel_rs)
+                       │
+                       ▼
+        Engineering Model  ← single source of truth
+                       │
+                       └── Render Data (derived, never stored)
+
+      later, all derived from the same model:
+        ├── 2D views / sections        ├── quantities / BOQ
+        ├── analytical model           ├── reports
+        └── BIM / IFC export           └── AI commands
 ```
 
 Everything below the model is *derived*. Nothing outside the kernel owns engineering
-data, and nothing outside the kernel may re-implement engineering rules.
+data, and nothing outside the kernel may re-implement engineering rules. The two
+boundaries are two shapes of *one* kernel, not two models.
 
 ## Kernel layers
 
@@ -173,17 +175,107 @@ architectural decision is a **Kernel Adapter trait** that isolates the
 engineering model from any concrete kernel, allowing the kernel to be swapped
 without rewriting model code.
 
+### D18 — A command is the only way to change the model
+
+`commands::elements::ElementCommand` is the sole mutation surface above the model.
+Touch, pen, mouse, keyboard and a future AI assistant all produce these commands and
+nothing else: an intent that cannot be expressed as a command does not change the
+model.
+
+*Consequence:* there is exactly one place to validate, to log, to replay and to
+reason about. A viewport can never "just move a mesh".
+
+### D19 — `ModelSession` wraps the kernel, it does not replace it
+
+`session::ModelSession` owns a `Project` plus the *editing* state that belongs to a
+working session (history, default material, active level, name counters).
+`EngineeringModel`, `ModelCommand`, validation and project persistence are
+untouched by it.
+
+*Consequence:* the model keeps its meaning and its tests; a session can be created,
+discarded and recreated without touching the data.
+
+### D20 — Undo/redo describes engineering state, exactly
+
+A command reports two lists of `StateOp`s — `forward` and `inverse`. Undo applies the
+inverse, redo applies the forward, and a creation records the created entity *itself*,
+identity included. A viewport, a mesh or a whole-file copy is never involved.
+
+*Consequence:* undo followed by redo yields byte-identical model content. The
+revision counter still advances, because undo and redo are themselves accepted
+mutations — the counter is an edit log, not a content hash.
+
+### D21 — `RenderData` is derived, never stored
+
+`render::RenderData` is a pure projection of the model: primitives, grid lines, level
+names, and the element id of every primitive. It is computed on demand, carries no
+renderer state, and is never serialized into a project file.
+
+*Consequence:* a renderer can be replaced (Canvas, WebGL, WebGPU, native) without
+touching the model, and construction of a box can change without touching project
+data.
+
+### D22 — One model, two boundaries
+
+`api.rs` (flutter_rust_bridge) and `wasm.rs` (wasm-bindgen) expose the *same*
+`ModelSession` and the *same* command contract. The WebAssembly build is not a second
+implementation: it is the kernel compiled to another target.
+
+*Consequence:* the browser workbench shows the real engineering model. A model written
+in JavaScript is impossible to introduce without deleting this boundary first.
+
+### D23 — Structured payloads cross as JSON
+
+The boundary exposes sessions, commands and derived data with primitive signatures;
+structured payloads travel as JSON strings. `wasm.rs` accepts a JSON `CommandRequest`;
+`api.rs` returns JSON for state, details, render data and snap results.
+
+*Consequence:* the command surface can grow without regenerating a bridge signature,
+and the same contract serves Dart, JavaScript, tests and tooling.
+
+### D24 — Sessions are explicitly owned
+
+The boundary keeps a registry keyed by session id and the client holds the handle.
+There is no single hidden "current model".
+
+*Consequence:* two documents can be open at once, and a session is a value that can be
+closed. (The `ModelSession` type itself holds no global state and is fully testable on
+its own.)
+
+### D25 — The renderer is not part of the product
+
+The browser renderer and the Flutter viewport both consume `RenderData` and report
+pointer events back as commands. Neither owns engineering data.
+
+*Consequence:* `web/app.js` can be deleted and rewritten without changing a single
+byte of a project.
+
+### D26 — The camera is not an engineering change
+
+Camera, selection, active tool, active level and snap settings live on the client.
+
+*Consequence:* moving the camera does not bump `revision` and does not dirty a project;
+a test asserts it.
+
 ## Explicitly out of scope in this step
 
-3D rendering, Three.js/WebGPU, CAD geometry, meshes, solids, booleans, BIM
-UI, structural analysis and solvers, AI, backend, cloud, database servers, SQLite,
-PostgreSQL, migrations, lazy loading, and any engineering logic in Flutter. They
+CAD geometry, meshes, solids, booleans, a geometry kernel adapter, structural analysis
+and solvers, reinforcement, quantities/BOQ, IFC/BIM export, AI, backend, cloud,
+database servers, migrations, lazy loading, and any engineering logic in the UI. They
 arrive as separate steps on top of this model.
+
+Also not implemented yet, and deliberately so: element-to-element relationships stored
+as ids, geometric constraints, free-hand drag grips for move/extend/rotate, sketch-mode
+slab boundaries, openings, roofs, stairs, derived 2D views and dimensions, and
+incremental (dirty-region) render updates — `RenderData` is currently recomputed in
+full.
 
 ## Verification
 
 ```bash
 cd core/geometry_kernel_rs && cargo check && cargo test
+cargo check --no-default-features --features wasm --target wasm32-unknown-unknown
+sh ../../scripts/build_wasm.sh          # kernel → web/pkg
 cd ../../apps/client_flutter && flutter pub get && flutter analyze && flutter test
 ```
 

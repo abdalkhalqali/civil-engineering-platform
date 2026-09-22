@@ -20,6 +20,8 @@
 //! Future commands (`CreateColumnCommand`, `CreateBeamCommand`, `MoveElementCommand`,
 //! `DeleteElementCommand`, `ChangePropertyCommand`, ...) implement the same trait.
 
+pub mod elements;
+
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

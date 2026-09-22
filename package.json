@@ -1,0 +1,11 @@
+{
+  "name": "civil-engineering-platform",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Browser workbench for the parametric civil engineering platform. The engineering model is the Rust kernel compiled to WebAssembly; the web page is only a renderer and an input device.",
+  "scripts": {
+    "dev": "node server.js",
+    "wasm": "sh ./scripts/build_wasm.sh",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true});require('fs').cpSync('web','dist',{recursive:true})\""
+  }
+}

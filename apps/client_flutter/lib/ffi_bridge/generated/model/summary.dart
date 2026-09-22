@@ -4,10 +4,14 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
-
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-/// A flat snapshot of what a model contains.
+
+            
+
+            
+
+            /// A flat snapshot of what a model contains.
 ///
 /// This type exists for the boundary: it is what the kernel is willing to hand to
 /// Flutter in this step, while the model itself stays in Rust. It is deliberately
@@ -17,64 +21,41 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 ///
 /// Full model transfer, DTOs and a bridge query/command layer belong to a later
 /// step.
-class ModelSummary {
-  /// Schema version of the model this summary was taken from.
-  final int schemaVersion;
+class ModelSummary  {
+                /// Schema version of the model this summary was taken from.
+final int schemaVersion;
+/// Project identity, as a hyphenated UUID string.
+final String projectId;
+/// Number of accepted mutations applied to the model.
+final BigInt revision;
+/// Number of levels.
+final int levels;
+/// Number of grid lines.
+final int grids;
+/// Number of materials.
+final int materials;
+/// Number of cross sections.
+final int crossSections;
+/// Number of physical elements.
+final int elements;
 
-  /// Project identity, as a hyphenated UUID string.
-  final String projectId;
+                const ModelSummary({required this.schemaVersion ,required this.projectId ,required this.revision ,required this.levels ,required this.grids ,required this.materials ,required this.crossSections ,required this.elements ,});
 
-  /// Number of accepted mutations applied to the model.
-  final BigInt revision;
 
-  /// Number of levels.
-  final int levels;
 
-  /// Number of grid lines.
-  final int grids;
 
-  /// Number of materials.
-  final int materials;
 
-  /// Number of cross sections.
-  final int crossSections;
+        @override
+        int get hashCode => schemaVersion.hashCode^projectId.hashCode^revision.hashCode^levels.hashCode^grids.hashCode^materials.hashCode^crossSections.hashCode^elements.hashCode;
 
-  /// Number of physical elements.
-  final int elements;
 
-  const ModelSummary({
-    required this.schemaVersion,
-    required this.projectId,
-    required this.revision,
-    required this.levels,
-    required this.grids,
-    required this.materials,
-    required this.crossSections,
-    required this.elements,
-  });
 
-  @override
-  int get hashCode =>
-      schemaVersion.hashCode ^
-      projectId.hashCode ^
-      revision.hashCode ^
-      levels.hashCode ^
-      grids.hashCode ^
-      materials.hashCode ^
-      crossSections.hashCode ^
-      elements.hashCode;
+        @override
+        bool operator ==(Object other) =>
+            identical(this, other) ||
+            other is ModelSummary &&
+                runtimeType == other.runtimeType
+                && schemaVersion == other.schemaVersion&& projectId == other.projectId&& revision == other.revision&& levels == other.levels&& grids == other.grids&& materials == other.materials&& crossSections == other.crossSections&& elements == other.elements;
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ModelSummary &&
-          runtimeType == other.runtimeType &&
-          schemaVersion == other.schemaVersion &&
-          projectId == other.projectId &&
-          revision == other.revision &&
-          levels == other.levels &&
-          grids == other.grids &&
-          materials == other.materials &&
-          crossSections == other.crossSections &&
-          elements == other.elements;
-}
+            }
+            

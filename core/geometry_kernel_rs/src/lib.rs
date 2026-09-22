@@ -32,13 +32,20 @@
 //! geometry, 3D rendering, structural analysis and databases are explicitly later
 //! steps.
 
+#[cfg(feature = "flutter-bridge")]
 pub mod api;
 pub mod commands;
 pub mod elements;
 pub mod error;
+pub mod history;
 pub mod math;
 pub mod model;
 pub mod project;
+pub mod render;
+pub mod session;
 pub mod units;
+#[cfg(feature = "wasm")]
+pub mod wasm;
 
+#[cfg(feature = "flutter-bridge")]
 mod frb_generated;

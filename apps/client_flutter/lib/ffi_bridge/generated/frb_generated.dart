@@ -4,954 +4,958 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'api.dart';
-
 import 'dart:async';
 import 'dart:convert';
-
 import 'frb_generated.dart';
-import 'frb_generated.io.dart'
-    if (dart.library.js_interop) 'frb_generated.web.dart';
+import 'frb_generated.io.dart' if (dart.library.js_interop) 'frb_generated.web.dart';
 import 'model/summary.dart';
-
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
-
 import 'project.dart';
+import 'session.dart';
 
-/// Main entrypoint of the Rust API
-class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
-  @internal
-  static final instance = RustLib._();
 
-  RustLib._();
+                /// Main entrypoint of the Rust API
+                class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
+                  @internal
+                  static final instance = RustLib._();
 
-  /// Initialize flutter_rust_bridge
-  static Future<void> init({
-    RustLibApi? api,
-    BaseHandler? handler,
-    ExternalLibrary? externalLibrary,
-    bool forceSameCodegenVersion = true,
-  }) async {
-    await instance.initImpl(
-      api: api,
-      handler: handler,
-      externalLibrary: externalLibrary,
-      forceSameCodegenVersion: forceSameCodegenVersion,
-    );
-  }
+                  RustLib._();
 
-  /// Initialize flutter_rust_bridge in mock mode.
-  /// No libraries for FFI are loaded.
-  static void initMock({required RustLibApi api}) {
-    instance.initMockImpl(api: api);
-  }
+                  /// Initialize flutter_rust_bridge
+                  static Future<void> init({
+                    RustLibApi? api,
+                    BaseHandler? handler,
+                    ExternalLibrary? externalLibrary,
+                    bool forceSameCodegenVersion = true,
+                  }) async {
+                    await instance.initImpl(
+                      api: api,
+                      handler: handler,
+                      externalLibrary: externalLibrary,
+                      forceSameCodegenVersion: forceSameCodegenVersion,
+                    );
+                  }
 
-  /// Dispose flutter_rust_bridge
-  ///
-  /// The call to this function is optional, since flutter_rust_bridge (and everything else)
-  /// is automatically disposed when the app stops.
-  static void dispose() => instance.disposeImpl();
+                  /// Initialize flutter_rust_bridge in mock mode.
+                  /// No libraries for FFI are loaded.
+                  static void initMock({
+                    required RustLibApi api,
+                  }) {
+                    instance.initMockImpl(
+                      api: api,
+                    );
+                  }
 
-  @override
-  ApiImplConstructor<RustLibApiImpl, RustLibWire> get apiImplConstructor =>
-      RustLibApiImpl.new;
+                  /// Dispose flutter_rust_bridge
+                  ///
+                  /// The call to this function is optional, since flutter_rust_bridge (and everything else)
+                  /// is automatically disposed when the app stops.
+                  static void dispose() => instance.disposeImpl();
 
-  @override
-  WireConstructor<RustLibWire> get wireConstructor =>
-      RustLibWire.fromExternalLibrary;
+                  @override
+                  ApiImplConstructor<RustLibApiImpl, RustLibWire> get apiImplConstructor => RustLibApiImpl.new;
 
-  @override
-  Future<void> executeRustInitializers() async {
-    await api.crateApiInitApp();
-  }
+                  @override
+                  WireConstructor<RustLibWire> get wireConstructor => RustLibWire.fromExternalLibrary;
 
-  @override
-  ExternalLibraryLoaderConfig get defaultExternalLibraryLoaderConfig =>
-      kDefaultExternalLibraryLoaderConfig;
+                  @override
+                  Future<void> executeRustInitializers() async {
+                    await api.crateApiInitApp();
 
-  @override
-  String get codegenVersion => '2.13.0';
+                    
+                  }
 
-  @override
-  int get rustContentHash => -802627972;
+                  @override
+                  ExternalLibraryLoaderConfig get defaultExternalLibraryLoaderConfig => kDefaultExternalLibraryLoaderConfig;
 
-  static const kDefaultExternalLibraryLoaderConfig =
-      ExternalLibraryLoaderConfig(
-        stem: 'geometry_kernel_rs',
-        ioDirectory: '../../core/geometry_kernel_rs/target/release/',
-        webPrefix: 'pkg/',
-        wasmBindgenName: 'wasm_bindgen',
-      );
-}
+                  @override
+                  String get codegenVersion => '2.13.0';
 
-abstract class RustLibApi extends BaseApi {
-  WorkspaceSnapshot crateApiAddBeamToWorkspace({
-    required double startXM,
-    required double startYM,
-    required double endXM,
-    required double endYM,
-  });
+                  @override
+                  int get rustContentHash => 1074023038;
 
-  WorkspaceSnapshot crateApiAddColumnToWorkspace({
-    required double xM,
-    required double yM,
-  });
+                  static const kDefaultExternalLibraryLoaderConfig = ExternalLibraryLoaderConfig(
+                    stem: 'geometry_kernel_rs',
+                    ioDirectory: '../../core/geometry_kernel_rs/target/release/',
+                    webPrefix: 'pkg/',
+                    wasmBindgenName: 'wasm_bindgen',
+                  );
+                }
+                
 
-  ModelSummary crateApiCreateEmptyModel();
+                abstract class RustLibApi extends BaseApi {
+                  bool crateApiCloseSession({required String sessionId });
 
-  ProjectSummary crateApiCreateProject({required String name});
+ModelSummary crateApiCreateEmptyModel();
 
-  WorkspaceSnapshot crateApiCreateWorkspaceSnapshot({
-    required String name,
-    required String projectType,
-    required double landAreaM2,
-  });
+ProjectSummary crateApiCreateProject({required String name });
 
-  String crateApiGetKernelStatus();
+String crateApiElementDetails({required String sessionId , required String elementId });
 
-  Future<void> crateApiInitApp();
-}
+CommandResult crateApiExecuteCommand({required String sessionId , required CommandRequest request });
 
-class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
-  RustLibApiImpl({
-    required super.handler,
-    required super.wire,
-    required super.generalizedFrbRustBinding,
-    required super.portManager,
-  });
+String crateApiGetKernelStatus();
 
-  @override
-  WorkspaceSnapshot crateApiAddBeamToWorkspace({
-    required double startXM,
-    required double startYM,
-    required double endXM,
-    required double endYM,
-  }) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_f_64(startXM, serializer);
-          sse_encode_f_64(startYM, serializer);
-          sse_encode_f_64(endXM, serializer);
-          sse_encode_f_64(endYM, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_workspace_snapshot,
+Future<void> crateApiInitApp();
+
+OpenSessionResult crateApiLoadSession({required List<int> data });
+
+OpenSessionResult crateApiOpenSession({required String name , required String projectType , required double landAreaM2 });
+
+CommandResult crateApiRedoCommand({required String sessionId });
+
+String crateApiRenderData({required String sessionId });
+
+Uint8List crateApiSaveSession({required String sessionId });
+
+String crateApiSessionState({required String sessionId });
+
+CommandResult crateApiSetActiveLevel({required String sessionId , required String levelId });
+
+SnapResult crateApiSnapPoint({required String sessionId , required double xM , required double yM , required double zM , required double toleranceM });
+
+CommandResult crateApiUndoCommand({required String sessionId });
+
+
+                }
+                
+
+                class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
+                  RustLibApiImpl({
+                    required super.handler,
+                    required super.wire,
+                    required super.generalizedFrbRustBinding,
+                    required super.portManager,
+                  });
+
+                  @override bool crateApiCloseSession({required String sessionId })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(sessionId, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_bool,
           decodeErrorData: null,
-        ),
-        constMeta: kCrateApiAddBeamToWorkspaceConstMeta,
-        argValues: [startXM, startYM, endXM, endYM],
-        apiImpl: this,
-      ),
-    );
-  }
+        )
+        ,
+            constMeta: kCrateApiCloseSessionConstMeta,
+            argValues: [sessionId],
+            apiImpl: this,
+        )); }
 
-  TaskConstMeta get kCrateApiAddBeamToWorkspaceConstMeta => const TaskConstMeta(
-    debugName: "add_beam_to_workspace",
-    argNames: ["startXM", "startYM", "endXM", "endYM"],
-  );
 
-  @override
-  WorkspaceSnapshot crateApiAddColumnToWorkspace({
-    required double xM,
-    required double yM,
-  }) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_f_64(xM, serializer);
-          sse_encode_f_64(yM, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_workspace_snapshot,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiAddColumnToWorkspaceConstMeta,
-        argValues: [xM, yM],
-        apiImpl: this,
-      ),
-    );
-  }
+        TaskConstMeta get kCrateApiCloseSessionConstMeta => const TaskConstMeta(
+            debugName: "close_session",
+            argNames: ["sessionId"],
+        );
+        
 
-  TaskConstMeta get kCrateApiAddColumnToWorkspaceConstMeta =>
-      const TaskConstMeta(
-        debugName: "add_column_to_workspace",
-        argNames: ["xM", "yM"],
-      );
-
-  @override
-  ModelSummary crateApiCreateEmptyModel() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
-        },
-        codec: SseCodec(
+@override ModelSummary crateApiCreateEmptyModel()  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+            
+            },
+            codec: 
+        SseCodec(
           decodeSuccessData: sse_decode_model_summary,
           decodeErrorData: null,
-        ),
-        constMeta: kCrateApiCreateEmptyModelConstMeta,
-        argValues: [],
-        apiImpl: this,
-      ),
-    );
-  }
+        )
+        ,
+            constMeta: kCrateApiCreateEmptyModelConstMeta,
+            argValues: [],
+            apiImpl: this,
+        )); }
 
-  TaskConstMeta get kCrateApiCreateEmptyModelConstMeta =>
-      const TaskConstMeta(debugName: "create_empty_model", argNames: []);
 
-  @override
-  ProjectSummary crateApiCreateProject({required String name}) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(name, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
-        },
-        codec: SseCodec(
+        TaskConstMeta get kCrateApiCreateEmptyModelConstMeta => const TaskConstMeta(
+            debugName: "create_empty_model",
+            argNames: [],
+        );
+        
+
+@override ProjectSummary crateApiCreateProject({required String name })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(name, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+            
+            },
+            codec: 
+        SseCodec(
           decodeSuccessData: sse_decode_project_summary,
           decodeErrorData: null,
-        ),
-        constMeta: kCrateApiCreateProjectConstMeta,
-        argValues: [name],
-        apiImpl: this,
-      ),
-    );
-  }
+        )
+        ,
+            constMeta: kCrateApiCreateProjectConstMeta,
+            argValues: [name],
+            apiImpl: this,
+        )); }
 
-  TaskConstMeta get kCrateApiCreateProjectConstMeta =>
-      const TaskConstMeta(debugName: "create_project", argNames: ["name"]);
 
-  @override
-  WorkspaceSnapshot crateApiCreateWorkspaceSnapshot({
-    required String name,
-    required String projectType,
-    required double landAreaM2,
-  }) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(name, serializer);
-          sse_encode_String(projectType, serializer);
-          sse_encode_f_64(landAreaM2, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_workspace_snapshot,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiCreateWorkspaceSnapshotConstMeta,
-        argValues: [name, projectType, landAreaM2],
-        apiImpl: this,
-      ),
-    );
-  }
+        TaskConstMeta get kCrateApiCreateProjectConstMeta => const TaskConstMeta(
+            debugName: "create_project",
+            argNames: ["name"],
+        );
+        
 
-  TaskConstMeta get kCrateApiCreateWorkspaceSnapshotConstMeta =>
-      const TaskConstMeta(
-        debugName: "create_workspace_snapshot",
-        argNames: ["name", "projectType", "landAreaM2"],
-      );
-
-  @override
-  String crateApiGetKernelStatus() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
-        },
-        codec: SseCodec(
+@override String crateApiElementDetails({required String sessionId , required String elementId })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(sessionId, serializer);
+sse_encode_String(elementId, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
+            
+            },
+            codec: 
+        SseCodec(
           decodeSuccessData: sse_decode_String,
           decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetKernelStatusConstMeta,
-        argValues: [],
-        apiImpl: this,
-      ),
-    );
-  }
+        )
+        ,
+            constMeta: kCrateApiElementDetailsConstMeta,
+            argValues: [sessionId, elementId],
+            apiImpl: this,
+        )); }
 
-  TaskConstMeta get kCrateApiGetKernelStatusConstMeta =>
-      const TaskConstMeta(debugName: "get_kernel_status", argNames: []);
 
-  @override
-  Future<void> crateApiInitApp() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 7,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
+        TaskConstMeta get kCrateApiElementDetailsConstMeta => const TaskConstMeta(
+            debugName: "element_details",
+            argNames: ["sessionId", "elementId"],
+        );
+        
+
+@override CommandResult crateApiExecuteCommand({required String sessionId , required CommandRequest request })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(sessionId, serializer);
+sse_encode_box_autoadd_command_request(request, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_command_result,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiExecuteCommandConstMeta,
+            argValues: [sessionId, request],
+            apiImpl: this,
+        )); }
+
+
+        TaskConstMeta get kCrateApiExecuteCommandConstMeta => const TaskConstMeta(
+            debugName: "execute_command",
+            argNames: ["sessionId", "request"],
+        );
+        
+
+@override String crateApiGetKernelStatus()  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiGetKernelStatusConstMeta,
+            argValues: [],
+            apiImpl: this,
+        )); }
+
+
+        TaskConstMeta get kCrateApiGetKernelStatusConstMeta => const TaskConstMeta(
+            debugName: "get_kernel_status",
+            argNames: [],
+        );
+        
+
+@override Future<void> crateApiInitApp()  { return handler.executeNormal(NormalTask(
+            callFfi: (port_) {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 7, port: port_);
+            
+            },
+            codec: 
+        SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
-        ),
-        constMeta: kCrateApiInitAppConstMeta,
-        argValues: [],
-        apiImpl: this,
-      ),
-    );
-  }
+        )
+        ,
+            constMeta: kCrateApiInitAppConstMeta,
+            argValues: [],
+            apiImpl: this,
+        )); }
 
-  TaskConstMeta get kCrateApiInitAppConstMeta =>
-      const TaskConstMeta(debugName: "init_app", argNames: []);
 
-  @protected
-  String dco_decode_String(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as String;
-  }
+        TaskConstMeta get kCrateApiInitAppConstMeta => const TaskConstMeta(
+            debugName: "init_app",
+            argNames: [],
+        );
+        
 
-  @protected
-  ElementSnapshot dco_decode_element_snapshot(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 13)
-      throw Exception('unexpected arr length: expect 13 but see ${arr.length}');
-    return ElementSnapshot(
-      id: dco_decode_String(arr[0]),
-      name: dco_decode_String(arr[1]),
-      category: dco_decode_String(arr[2]),
-      x: dco_decode_f_64(arr[3]),
-      y: dco_decode_f_64(arr[4]),
-      z: dco_decode_f_64(arr[5]),
-      topZ: dco_decode_f_64(arr[6]),
-      width: dco_decode_f_64(arr[7]),
-      depth: dco_decode_f_64(arr[8]),
-      thickness: dco_decode_f_64(arr[9]),
-      start: dco_decode_point_snapshot(arr[10]),
-      end: dco_decode_point_snapshot(arr[11]),
-      boundary: dco_decode_list_point_snapshot(arr[12]),
-    );
-  }
+@override OpenSessionResult crateApiLoadSession({required List<int> data })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_list_prim_u_8_loose(data, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_open_session_result,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiLoadSessionConstMeta,
+            argValues: [data],
+            apiImpl: this,
+        )); }
 
-  @protected
-  double dco_decode_f_64(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as double;
-  }
 
-  @protected
-  GridSnapshot dco_decode_grid_snapshot(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
-    return GridSnapshot(
-      id: dco_decode_String(arr[0]),
-      name: dco_decode_String(arr[1]),
-      direction: dco_decode_String(arr[2]),
-      offsetM: dco_decode_f_64(arr[3]),
-    );
-  }
+        TaskConstMeta get kCrateApiLoadSessionConstMeta => const TaskConstMeta(
+            debugName: "load_session",
+            argNames: ["data"],
+        );
+        
 
-  @protected
-  LevelSnapshot dco_decode_level_snapshot(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 3)
-      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
-    return LevelSnapshot(
-      id: dco_decode_String(arr[0]),
-      name: dco_decode_String(arr[1]),
-      elevationM: dco_decode_f_64(arr[2]),
-    );
-  }
+@override OpenSessionResult crateApiOpenSession({required String name , required String projectType , required double landAreaM2 })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(name, serializer);
+sse_encode_String(projectType, serializer);
+sse_encode_f_64(landAreaM2, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_open_session_result,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiOpenSessionConstMeta,
+            argValues: [name, projectType, landAreaM2],
+            apiImpl: this,
+        )); }
 
-  @protected
-  List<ElementSnapshot> dco_decode_list_element_snapshot(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return (raw as List<dynamic>).map(dco_decode_element_snapshot).toList();
-  }
 
-  @protected
-  List<GridSnapshot> dco_decode_list_grid_snapshot(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return (raw as List<dynamic>).map(dco_decode_grid_snapshot).toList();
-  }
+        TaskConstMeta get kCrateApiOpenSessionConstMeta => const TaskConstMeta(
+            debugName: "open_session",
+            argNames: ["name", "projectType", "landAreaM2"],
+        );
+        
 
-  @protected
-  List<LevelSnapshot> dco_decode_list_level_snapshot(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return (raw as List<dynamic>).map(dco_decode_level_snapshot).toList();
-  }
+@override CommandResult crateApiRedoCommand({required String sessionId })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(sessionId, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 10)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_command_result,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiRedoCommandConstMeta,
+            argValues: [sessionId],
+            apiImpl: this,
+        )); }
 
-  @protected
-  List<PointSnapshot> dco_decode_list_point_snapshot(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return (raw as List<dynamic>).map(dco_decode_point_snapshot).toList();
-  }
 
-  @protected
-  Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as Uint8List;
-  }
+        TaskConstMeta get kCrateApiRedoCommandConstMeta => const TaskConstMeta(
+            debugName: "redo_command",
+            argNames: ["sessionId"],
+        );
+        
 
-  @protected
-  ModelSummary dco_decode_model_summary(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 8)
-      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
-    return ModelSummary(
-      schemaVersion: dco_decode_u_32(arr[0]),
-      projectId: dco_decode_String(arr[1]),
-      revision: dco_decode_u_64(arr[2]),
-      levels: dco_decode_u_32(arr[3]),
-      grids: dco_decode_u_32(arr[4]),
-      materials: dco_decode_u_32(arr[5]),
-      crossSections: dco_decode_u_32(arr[6]),
-      elements: dco_decode_u_32(arr[7]),
-    );
-  }
+@override String crateApiRenderData({required String sessionId })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(sessionId, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiRenderDataConstMeta,
+            argValues: [sessionId],
+            apiImpl: this,
+        )); }
 
-  @protected
-  PointSnapshot dco_decode_point_snapshot(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 3)
-      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
-    return PointSnapshot(
-      x: dco_decode_f_64(arr[0]),
-      y: dco_decode_f_64(arr[1]),
-      z: dco_decode_f_64(arr[2]),
-    );
-  }
 
-  @protected
-  ProjectSummary dco_decode_project_summary(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 12)
-      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
-    return ProjectSummary(
-      formatVersion: dco_decode_u_32(arr[0]),
-      modelSchemaVersion: dco_decode_u_32(arr[1]),
-      projectId: dco_decode_String(arr[2]),
-      name: dco_decode_String(arr[3]),
-      projectType: dco_decode_String(arr[4]),
-      landAreaM2: dco_decode_f_64(arr[5]),
-      revision: dco_decode_u_64(arr[6]),
-      levels: dco_decode_u_32(arr[7]),
-      grids: dco_decode_u_32(arr[8]),
-      materials: dco_decode_u_32(arr[9]),
-      crossSections: dco_decode_u_32(arr[10]),
-      elements: dco_decode_u_32(arr[11]),
-    );
-  }
+        TaskConstMeta get kCrateApiRenderDataConstMeta => const TaskConstMeta(
+            debugName: "render_data",
+            argNames: ["sessionId"],
+        );
+        
 
-  @protected
-  int dco_decode_u_32(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as int;
-  }
+@override Uint8List crateApiSaveSession({required String sessionId })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(sessionId, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 12)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_list_prim_u_8_strict,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiSaveSessionConstMeta,
+            argValues: [sessionId],
+            apiImpl: this,
+        )); }
 
-  @protected
-  BigInt dco_decode_u_64(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return dcoDecodeU64(raw);
-  }
 
-  @protected
-  int dco_decode_u_8(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as int;
-  }
+        TaskConstMeta get kCrateApiSaveSessionConstMeta => const TaskConstMeta(
+            debugName: "save_session",
+            argNames: ["sessionId"],
+        );
+        
 
-  @protected
-  void dco_decode_unit(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return;
-  }
+@override String crateApiSessionState({required String sessionId })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(sessionId, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 13)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiSessionStateConstMeta,
+            argValues: [sessionId],
+            apiImpl: this,
+        )); }
 
-  @protected
-  WorkspaceSnapshot dco_decode_workspace_snapshot(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 8)
-      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
-    return WorkspaceSnapshot(
-      projectId: dco_decode_String(arr[0]),
-      projectName: dco_decode_String(arr[1]),
-      projectType: dco_decode_String(arr[2]),
-      landAreaM2: dco_decode_f_64(arr[3]),
-      revision: dco_decode_u_64(arr[4]),
-      levels: dco_decode_list_level_snapshot(arr[5]),
-      grids: dco_decode_list_grid_snapshot(arr[6]),
-      elements: dco_decode_list_element_snapshot(arr[7]),
-    );
-  }
 
-  @protected
-  String sse_decode_String(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var inner = sse_decode_list_prim_u_8_strict(deserializer);
-    return utf8.decoder.convert(inner);
-  }
+        TaskConstMeta get kCrateApiSessionStateConstMeta => const TaskConstMeta(
+            debugName: "session_state",
+            argNames: ["sessionId"],
+        );
+        
 
-  @protected
-  ElementSnapshot sse_decode_element_snapshot(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_id = sse_decode_String(deserializer);
-    var var_name = sse_decode_String(deserializer);
-    var var_category = sse_decode_String(deserializer);
-    var var_x = sse_decode_f_64(deserializer);
-    var var_y = sse_decode_f_64(deserializer);
-    var var_z = sse_decode_f_64(deserializer);
-    var var_topZ = sse_decode_f_64(deserializer);
-    var var_width = sse_decode_f_64(deserializer);
-    var var_depth = sse_decode_f_64(deserializer);
-    var var_thickness = sse_decode_f_64(deserializer);
-    var var_start = sse_decode_point_snapshot(deserializer);
-    var var_end = sse_decode_point_snapshot(deserializer);
-    var var_boundary = sse_decode_list_point_snapshot(deserializer);
-    return ElementSnapshot(
-      id: var_id,
-      name: var_name,
-      category: var_category,
-      x: var_x,
-      y: var_y,
-      z: var_z,
-      topZ: var_topZ,
-      width: var_width,
-      depth: var_depth,
-      thickness: var_thickness,
-      start: var_start,
-      end: var_end,
-      boundary: var_boundary,
-    );
-  }
+@override CommandResult crateApiSetActiveLevel({required String sessionId , required String levelId })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(sessionId, serializer);
+sse_encode_String(levelId, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 14)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_command_result,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiSetActiveLevelConstMeta,
+            argValues: [sessionId, levelId],
+            apiImpl: this,
+        )); }
 
-  @protected
-  double sse_decode_f_64(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getFloat64();
-  }
 
-  @protected
-  GridSnapshot sse_decode_grid_snapshot(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_id = sse_decode_String(deserializer);
-    var var_name = sse_decode_String(deserializer);
-    var var_direction = sse_decode_String(deserializer);
-    var var_offsetM = sse_decode_f_64(deserializer);
-    return GridSnapshot(
-      id: var_id,
-      name: var_name,
-      direction: var_direction,
-      offsetM: var_offsetM,
-    );
-  }
+        TaskConstMeta get kCrateApiSetActiveLevelConstMeta => const TaskConstMeta(
+            debugName: "set_active_level",
+            argNames: ["sessionId", "levelId"],
+        );
+        
 
-  @protected
-  LevelSnapshot sse_decode_level_snapshot(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_id = sse_decode_String(deserializer);
-    var var_name = sse_decode_String(deserializer);
-    var var_elevationM = sse_decode_f_64(deserializer);
-    return LevelSnapshot(
-      id: var_id,
-      name: var_name,
-      elevationM: var_elevationM,
-    );
-  }
+@override SnapResult crateApiSnapPoint({required String sessionId , required double xM , required double yM , required double zM , required double toleranceM })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(sessionId, serializer);
+sse_encode_f_64(xM, serializer);
+sse_encode_f_64(yM, serializer);
+sse_encode_f_64(zM, serializer);
+sse_encode_f_64(toleranceM, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 15)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_snap_result,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiSnapPointConstMeta,
+            argValues: [sessionId, xM, yM, zM, toleranceM],
+            apiImpl: this,
+        )); }
 
-  @protected
-  List<ElementSnapshot> sse_decode_list_element_snapshot(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
 
-    var len_ = sse_decode_i_32(deserializer);
-    var ans_ = <ElementSnapshot>[];
-    for (var idx_ = 0; idx_ < len_; ++idx_) {
-      ans_.add(sse_decode_element_snapshot(deserializer));
-    }
-    return ans_;
-  }
+        TaskConstMeta get kCrateApiSnapPointConstMeta => const TaskConstMeta(
+            debugName: "snap_point",
+            argNames: ["sessionId", "xM", "yM", "zM", "toleranceM"],
+        );
+        
 
-  @protected
-  List<GridSnapshot> sse_decode_list_grid_snapshot(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
+@override CommandResult crateApiUndoCommand({required String sessionId })  { return handler.executeSync(SyncTask(
+            callFfi: () {
+              
+            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(sessionId, serializer);
+            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 16)!;
+            
+            },
+            codec: 
+        SseCodec(
+          decodeSuccessData: sse_decode_command_result,
+          decodeErrorData: null,
+        )
+        ,
+            constMeta: kCrateApiUndoCommandConstMeta,
+            argValues: [sessionId],
+            apiImpl: this,
+        )); }
 
-    var len_ = sse_decode_i_32(deserializer);
-    var ans_ = <GridSnapshot>[];
-    for (var idx_ = 0; idx_ < len_; ++idx_) {
-      ans_.add(sse_decode_grid_snapshot(deserializer));
-    }
-    return ans_;
-  }
 
-  @protected
-  List<LevelSnapshot> sse_decode_list_level_snapshot(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
+        TaskConstMeta get kCrateApiUndoCommandConstMeta => const TaskConstMeta(
+            debugName: "undo_command",
+            argNames: ["sessionId"],
+        );
+        
 
-    var len_ = sse_decode_i_32(deserializer);
-    var ans_ = <LevelSnapshot>[];
-    for (var idx_ = 0; idx_ < len_; ++idx_) {
-      ans_.add(sse_decode_level_snapshot(deserializer));
-    }
-    return ans_;
-  }
 
-  @protected
-  List<PointSnapshot> sse_decode_list_point_snapshot(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
 
-    var len_ = sse_decode_i_32(deserializer);
-    var ans_ = <PointSnapshot>[];
-    for (var idx_ = 0; idx_ < len_; ++idx_) {
-      ans_.add(sse_decode_point_snapshot(deserializer));
-    }
-    return ans_;
-  }
+                  @protected String dco_decode_String(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return raw as String; }
 
-  @protected
-  Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var len_ = sse_decode_i_32(deserializer);
-    return deserializer.buffer.getUint8List(len_);
-  }
+@protected bool dco_decode_bool(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return raw as bool; }
 
-  @protected
-  ModelSummary sse_decode_model_summary(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_schemaVersion = sse_decode_u_32(deserializer);
-    var var_projectId = sse_decode_String(deserializer);
-    var var_revision = sse_decode_u_64(deserializer);
-    var var_levels = sse_decode_u_32(deserializer);
-    var var_grids = sse_decode_u_32(deserializer);
-    var var_materials = sse_decode_u_32(deserializer);
-    var var_crossSections = sse_decode_u_32(deserializer);
-    var var_elements = sse_decode_u_32(deserializer);
-    return ModelSummary(
-      schemaVersion: var_schemaVersion,
-      projectId: var_projectId,
-      revision: var_revision,
-      levels: var_levels,
-      grids: var_grids,
-      materials: var_materials,
-      crossSections: var_crossSections,
-      elements: var_elements,
-    );
-  }
+@protected CommandRequest dco_decode_box_autoadd_command_request(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return dco_decode_command_request(raw); }
 
-  @protected
-  PointSnapshot sse_decode_point_snapshot(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_x = sse_decode_f_64(deserializer);
-    var var_y = sse_decode_f_64(deserializer);
-    var var_z = sse_decode_f_64(deserializer);
-    return PointSnapshot(x: var_x, y: var_y, z: var_z);
-  }
+@protected CommandRequest dco_decode_command_request(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+final arr = raw as List<dynamic>;
+                if (arr.length != 25) throw Exception('unexpected arr length: expect 25 but see ${arr.length}');
+                return CommandRequest(command: dco_decode_String(arr[0]),
+name: dco_decode_String(arr[1]),
+elementId: dco_decode_String(arr[2]),
+levelId: dco_decode_String(arr[3]),
+baseLevelId: dco_decode_String(arr[4]),
+topLevelId: dco_decode_String(arr[5]),
+xM: dco_decode_f_64(arr[6]),
+yM: dco_decode_f_64(arr[7]),
+widthM: dco_decode_f_64(arr[8]),
+depthM: dco_decode_f_64(arr[9]),
+thicknessM: dco_decode_f_64(arr[10]),
+widthMm: dco_decode_f_64(arr[11]),
+depthMm: dco_decode_f_64(arr[12]),
+startXM: dco_decode_f_64(arr[13]),
+startYM: dco_decode_f_64(arr[14]),
+endXM: dco_decode_f_64(arr[15]),
+endYM: dco_decode_f_64(arr[16]),
+dxM: dco_decode_f_64(arr[17]),
+dyM: dco_decode_f_64(arr[18]),
+dzM: dco_decode_f_64(arr[19]),
+direction: dco_decode_String(arr[20]),
+offsetM: dco_decode_f_64(arr[21]),
+elevationM: dco_decode_f_64(arr[22]),
+foundationKind: dco_decode_String(arr[23]),
+points: dco_decode_list_prim_f_64_strict(arr[24]),); }
 
-  @protected
-  ProjectSummary sse_decode_project_summary(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_formatVersion = sse_decode_u_32(deserializer);
-    var var_modelSchemaVersion = sse_decode_u_32(deserializer);
-    var var_projectId = sse_decode_String(deserializer);
-    var var_name = sse_decode_String(deserializer);
-    var var_projectType = sse_decode_String(deserializer);
-    var var_landAreaM2 = sse_decode_f_64(deserializer);
-    var var_revision = sse_decode_u_64(deserializer);
-    var var_levels = sse_decode_u_32(deserializer);
-    var var_grids = sse_decode_u_32(deserializer);
-    var var_materials = sse_decode_u_32(deserializer);
-    var var_crossSections = sse_decode_u_32(deserializer);
-    var var_elements = sse_decode_u_32(deserializer);
-    return ProjectSummary(
-      formatVersion: var_formatVersion,
-      modelSchemaVersion: var_modelSchemaVersion,
-      projectId: var_projectId,
-      name: var_name,
-      projectType: var_projectType,
-      landAreaM2: var_landAreaM2,
-      revision: var_revision,
-      levels: var_levels,
-      grids: var_grids,
-      materials: var_materials,
-      crossSections: var_crossSections,
-      elements: var_elements,
-    );
-  }
+@protected CommandResult dco_decode_command_result(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+final arr = raw as List<dynamic>;
+                if (arr.length != 7) throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+                return CommandResult(ok: dco_decode_bool(arr[0]),
+message: dco_decode_String(arr[1]),
+label: dco_decode_String(arr[2]),
+revision: dco_decode_u_64(arr[3]),
+changedIds: dco_decode_list_String(arr[4]),
+canUndo: dco_decode_bool(arr[5]),
+canRedo: dco_decode_bool(arr[6]),); }
 
-  @protected
-  int sse_decode_u_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint32();
-  }
+@protected double dco_decode_f_64(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return raw as double; }
 
-  @protected
-  BigInt sse_decode_u_64(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getBigUint64();
-  }
+@protected List<String> dco_decode_list_String(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return (raw as List<dynamic>).map(dco_decode_String).toList(); }
 
-  @protected
-  int sse_decode_u_8(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint8();
-  }
+@protected Float64List dco_decode_list_prim_f_64_strict(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return raw as Float64List; }
 
-  @protected
-  void sse_decode_unit(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-  }
+@protected List<int> dco_decode_list_prim_u_8_loose(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return raw as List<int>; }
 
-  @protected
-  WorkspaceSnapshot sse_decode_workspace_snapshot(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_projectId = sse_decode_String(deserializer);
-    var var_projectName = sse_decode_String(deserializer);
-    var var_projectType = sse_decode_String(deserializer);
-    var var_landAreaM2 = sse_decode_f_64(deserializer);
-    var var_revision = sse_decode_u_64(deserializer);
-    var var_levels = sse_decode_list_level_snapshot(deserializer);
-    var var_grids = sse_decode_list_grid_snapshot(deserializer);
-    var var_elements = sse_decode_list_element_snapshot(deserializer);
-    return WorkspaceSnapshot(
-      projectId: var_projectId,
-      projectName: var_projectName,
-      projectType: var_projectType,
-      landAreaM2: var_landAreaM2,
-      revision: var_revision,
-      levels: var_levels,
-      grids: var_grids,
-      elements: var_elements,
-    );
-  }
+@protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return raw as Uint8List; }
 
-  @protected
-  int sse_decode_i_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getInt32();
-  }
+@protected List<SnapCandidate> dco_decode_list_snap_candidate(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return (raw as List<dynamic>).map(dco_decode_snap_candidate).toList(); }
 
-  @protected
-  bool sse_decode_bool(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint8() != 0;
-  }
+@protected ModelSummary dco_decode_model_summary(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+final arr = raw as List<dynamic>;
+                if (arr.length != 8) throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+                return ModelSummary(schemaVersion: dco_decode_u_32(arr[0]),
+projectId: dco_decode_String(arr[1]),
+revision: dco_decode_u_64(arr[2]),
+levels: dco_decode_u_32(arr[3]),
+grids: dco_decode_u_32(arr[4]),
+materials: dco_decode_u_32(arr[5]),
+crossSections: dco_decode_u_32(arr[6]),
+elements: dco_decode_u_32(arr[7]),); }
 
-  @protected
-  void sse_encode_String(String self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
-  }
+@protected OpenSessionResult dco_decode_open_session_result(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+final arr = raw as List<dynamic>;
+                if (arr.length != 4) throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+                return OpenSessionResult(ok: dco_decode_bool(arr[0]),
+message: dco_decode_String(arr[1]),
+sessionId: dco_decode_String(arr[2]),
+stateJson: dco_decode_String(arr[3]),); }
 
-  @protected
-  void sse_encode_element_snapshot(
-    ElementSnapshot self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_String(self.id, serializer);
-    sse_encode_String(self.name, serializer);
-    sse_encode_String(self.category, serializer);
-    sse_encode_f_64(self.x, serializer);
-    sse_encode_f_64(self.y, serializer);
-    sse_encode_f_64(self.z, serializer);
-    sse_encode_f_64(self.topZ, serializer);
-    sse_encode_f_64(self.width, serializer);
-    sse_encode_f_64(self.depth, serializer);
-    sse_encode_f_64(self.thickness, serializer);
-    sse_encode_point_snapshot(self.start, serializer);
-    sse_encode_point_snapshot(self.end, serializer);
-    sse_encode_list_point_snapshot(self.boundary, serializer);
-  }
+@protected ProjectSummary dco_decode_project_summary(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+final arr = raw as List<dynamic>;
+                if (arr.length != 12) throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
+                return ProjectSummary(formatVersion: dco_decode_u_32(arr[0]),
+modelSchemaVersion: dco_decode_u_32(arr[1]),
+projectId: dco_decode_String(arr[2]),
+name: dco_decode_String(arr[3]),
+projectType: dco_decode_String(arr[4]),
+landAreaM2: dco_decode_f_64(arr[5]),
+revision: dco_decode_u_64(arr[6]),
+levels: dco_decode_u_32(arr[7]),
+grids: dco_decode_u_32(arr[8]),
+materials: dco_decode_u_32(arr[9]),
+crossSections: dco_decode_u_32(arr[10]),
+elements: dco_decode_u_32(arr[11]),); }
 
-  @protected
-  void sse_encode_f_64(double self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putFloat64(self);
-  }
+@protected SnapCandidate dco_decode_snap_candidate(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+final arr = raw as List<dynamic>;
+                if (arr.length != 6) throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+                return SnapCandidate(kind: dco_decode_String(arr[0]),
+label: dco_decode_String(arr[1]),
+xM: dco_decode_f_64(arr[2]),
+yM: dco_decode_f_64(arr[3]),
+zM: dco_decode_f_64(arr[4]),
+distanceM: dco_decode_f_64(arr[5]),); }
 
-  @protected
-  void sse_encode_grid_snapshot(GridSnapshot self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_String(self.id, serializer);
-    sse_encode_String(self.name, serializer);
-    sse_encode_String(self.direction, serializer);
-    sse_encode_f_64(self.offsetM, serializer);
-  }
+@protected SnapResult dco_decode_snap_result(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+final arr = raw as List<dynamic>;
+                if (arr.length != 7) throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+                return SnapResult(snapped: dco_decode_bool(arr[0]),
+kind: dco_decode_String(arr[1]),
+label: dco_decode_String(arr[2]),
+xM: dco_decode_f_64(arr[3]),
+yM: dco_decode_f_64(arr[4]),
+zM: dco_decode_f_64(arr[5]),
+candidates: dco_decode_list_snap_candidate(arr[6]),); }
 
-  @protected
-  void sse_encode_level_snapshot(LevelSnapshot self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_String(self.id, serializer);
-    sse_encode_String(self.name, serializer);
-    sse_encode_f_64(self.elevationM, serializer);
-  }
+@protected int dco_decode_u_32(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return raw as int; }
 
-  @protected
-  void sse_encode_list_element_snapshot(
-    List<ElementSnapshot> self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_32(self.length, serializer);
-    for (final item in self) {
-      sse_encode_element_snapshot(item, serializer);
-    }
-  }
+@protected BigInt dco_decode_u_64(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return dcoDecodeU64(raw); }
 
-  @protected
-  void sse_encode_list_grid_snapshot(
-    List<GridSnapshot> self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_32(self.length, serializer);
-    for (final item in self) {
-      sse_encode_grid_snapshot(item, serializer);
-    }
-  }
+@protected int dco_decode_u_8(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return raw as int; }
 
-  @protected
-  void sse_encode_list_level_snapshot(
-    List<LevelSnapshot> self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_32(self.length, serializer);
-    for (final item in self) {
-      sse_encode_level_snapshot(item, serializer);
-    }
-  }
+@protected void dco_decode_unit(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
+return; }
 
-  @protected
-  void sse_encode_list_point_snapshot(
-    List<PointSnapshot> self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_32(self.length, serializer);
-    for (final item in self) {
-      sse_encode_point_snapshot(item, serializer);
-    }
-  }
+@protected String sse_decode_String(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var inner = sse_decode_list_prim_u_8_strict(deserializer);
+        return utf8.decoder.convert(inner); }
 
-  @protected
-  void sse_encode_list_prim_u_8_strict(
-    Uint8List self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_32(self.length, serializer);
-    serializer.buffer.putUint8List(self);
-  }
+@protected bool sse_decode_bool(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+return deserializer.buffer.getUint8() != 0; }
 
-  @protected
-  void sse_encode_model_summary(ModelSummary self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_u_32(self.schemaVersion, serializer);
-    sse_encode_String(self.projectId, serializer);
-    sse_encode_u_64(self.revision, serializer);
-    sse_encode_u_32(self.levels, serializer);
-    sse_encode_u_32(self.grids, serializer);
-    sse_encode_u_32(self.materials, serializer);
-    sse_encode_u_32(self.crossSections, serializer);
-    sse_encode_u_32(self.elements, serializer);
-  }
+@protected CommandRequest sse_decode_box_autoadd_command_request(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+return (sse_decode_command_request(deserializer)); }
 
-  @protected
-  void sse_encode_point_snapshot(PointSnapshot self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_f_64(self.x, serializer);
-    sse_encode_f_64(self.y, serializer);
-    sse_encode_f_64(self.z, serializer);
-  }
+@protected CommandRequest sse_decode_command_request(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var var_command = sse_decode_String(deserializer);
+var var_name = sse_decode_String(deserializer);
+var var_elementId = sse_decode_String(deserializer);
+var var_levelId = sse_decode_String(deserializer);
+var var_baseLevelId = sse_decode_String(deserializer);
+var var_topLevelId = sse_decode_String(deserializer);
+var var_xM = sse_decode_f_64(deserializer);
+var var_yM = sse_decode_f_64(deserializer);
+var var_widthM = sse_decode_f_64(deserializer);
+var var_depthM = sse_decode_f_64(deserializer);
+var var_thicknessM = sse_decode_f_64(deserializer);
+var var_widthMm = sse_decode_f_64(deserializer);
+var var_depthMm = sse_decode_f_64(deserializer);
+var var_startXM = sse_decode_f_64(deserializer);
+var var_startYM = sse_decode_f_64(deserializer);
+var var_endXM = sse_decode_f_64(deserializer);
+var var_endYM = sse_decode_f_64(deserializer);
+var var_dxM = sse_decode_f_64(deserializer);
+var var_dyM = sse_decode_f_64(deserializer);
+var var_dzM = sse_decode_f_64(deserializer);
+var var_direction = sse_decode_String(deserializer);
+var var_offsetM = sse_decode_f_64(deserializer);
+var var_elevationM = sse_decode_f_64(deserializer);
+var var_foundationKind = sse_decode_String(deserializer);
+var var_points = sse_decode_list_prim_f_64_strict(deserializer);
+return CommandRequest(command: var_command, name: var_name, elementId: var_elementId, levelId: var_levelId, baseLevelId: var_baseLevelId, topLevelId: var_topLevelId, xM: var_xM, yM: var_yM, widthM: var_widthM, depthM: var_depthM, thicknessM: var_thicknessM, widthMm: var_widthMm, depthMm: var_depthMm, startXM: var_startXM, startYM: var_startYM, endXM: var_endXM, endYM: var_endYM, dxM: var_dxM, dyM: var_dyM, dzM: var_dzM, direction: var_direction, offsetM: var_offsetM, elevationM: var_elevationM, foundationKind: var_foundationKind, points: var_points); }
 
-  @protected
-  void sse_encode_project_summary(
-    ProjectSummary self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_u_32(self.formatVersion, serializer);
-    sse_encode_u_32(self.modelSchemaVersion, serializer);
-    sse_encode_String(self.projectId, serializer);
-    sse_encode_String(self.name, serializer);
-    sse_encode_String(self.projectType, serializer);
-    sse_encode_f_64(self.landAreaM2, serializer);
-    sse_encode_u_64(self.revision, serializer);
-    sse_encode_u_32(self.levels, serializer);
-    sse_encode_u_32(self.grids, serializer);
-    sse_encode_u_32(self.materials, serializer);
-    sse_encode_u_32(self.crossSections, serializer);
-    sse_encode_u_32(self.elements, serializer);
-  }
+@protected CommandResult sse_decode_command_result(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var var_ok = sse_decode_bool(deserializer);
+var var_message = sse_decode_String(deserializer);
+var var_label = sse_decode_String(deserializer);
+var var_revision = sse_decode_u_64(deserializer);
+var var_changedIds = sse_decode_list_String(deserializer);
+var var_canUndo = sse_decode_bool(deserializer);
+var var_canRedo = sse_decode_bool(deserializer);
+return CommandResult(ok: var_ok, message: var_message, label: var_label, revision: var_revision, changedIds: var_changedIds, canUndo: var_canUndo, canRedo: var_canRedo); }
 
-  @protected
-  void sse_encode_u_32(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint32(self);
-  }
+@protected double sse_decode_f_64(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+return deserializer.buffer.getFloat64(); }
 
-  @protected
-  void sse_encode_u_64(BigInt self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putBigUint64(self);
-  }
+@protected List<String> sse_decode_list_String(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
 
-  @protected
-  void sse_encode_u_8(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint8(self);
-  }
+        var len_ = sse_decode_i_32(deserializer);
+        var ans_ = <String>[];
+        for (var idx_ = 0; idx_ < len_; ++idx_) { ans_.add(sse_decode_String(deserializer)); }
+        return ans_;
+         }
 
-  @protected
-  void sse_encode_unit(void self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-  }
+@protected Float64List sse_decode_list_prim_f_64_strict(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var len_ = sse_decode_i_32(deserializer);
+                return deserializer.buffer.getFloat64List(len_); }
 
-  @protected
-  void sse_encode_workspace_snapshot(
-    WorkspaceSnapshot self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_String(self.projectId, serializer);
-    sse_encode_String(self.projectName, serializer);
-    sse_encode_String(self.projectType, serializer);
-    sse_encode_f_64(self.landAreaM2, serializer);
-    sse_encode_u_64(self.revision, serializer);
-    sse_encode_list_level_snapshot(self.levels, serializer);
-    sse_encode_list_grid_snapshot(self.grids, serializer);
-    sse_encode_list_element_snapshot(self.elements, serializer);
-  }
+@protected List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var len_ = sse_decode_i_32(deserializer);
+                return deserializer.buffer.getUint8List(len_); }
 
-  @protected
-  void sse_encode_i_32(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putInt32(self);
-  }
+@protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var len_ = sse_decode_i_32(deserializer);
+                return deserializer.buffer.getUint8List(len_); }
 
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint8(self ? 1 : 0);
-  }
-}
+@protected List<SnapCandidate> sse_decode_list_snap_candidate(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+
+        var len_ = sse_decode_i_32(deserializer);
+        var ans_ = <SnapCandidate>[];
+        for (var idx_ = 0; idx_ < len_; ++idx_) { ans_.add(sse_decode_snap_candidate(deserializer)); }
+        return ans_;
+         }
+
+@protected ModelSummary sse_decode_model_summary(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var var_schemaVersion = sse_decode_u_32(deserializer);
+var var_projectId = sse_decode_String(deserializer);
+var var_revision = sse_decode_u_64(deserializer);
+var var_levels = sse_decode_u_32(deserializer);
+var var_grids = sse_decode_u_32(deserializer);
+var var_materials = sse_decode_u_32(deserializer);
+var var_crossSections = sse_decode_u_32(deserializer);
+var var_elements = sse_decode_u_32(deserializer);
+return ModelSummary(schemaVersion: var_schemaVersion, projectId: var_projectId, revision: var_revision, levels: var_levels, grids: var_grids, materials: var_materials, crossSections: var_crossSections, elements: var_elements); }
+
+@protected OpenSessionResult sse_decode_open_session_result(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var var_ok = sse_decode_bool(deserializer);
+var var_message = sse_decode_String(deserializer);
+var var_sessionId = sse_decode_String(deserializer);
+var var_stateJson = sse_decode_String(deserializer);
+return OpenSessionResult(ok: var_ok, message: var_message, sessionId: var_sessionId, stateJson: var_stateJson); }
+
+@protected ProjectSummary sse_decode_project_summary(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var var_formatVersion = sse_decode_u_32(deserializer);
+var var_modelSchemaVersion = sse_decode_u_32(deserializer);
+var var_projectId = sse_decode_String(deserializer);
+var var_name = sse_decode_String(deserializer);
+var var_projectType = sse_decode_String(deserializer);
+var var_landAreaM2 = sse_decode_f_64(deserializer);
+var var_revision = sse_decode_u_64(deserializer);
+var var_levels = sse_decode_u_32(deserializer);
+var var_grids = sse_decode_u_32(deserializer);
+var var_materials = sse_decode_u_32(deserializer);
+var var_crossSections = sse_decode_u_32(deserializer);
+var var_elements = sse_decode_u_32(deserializer);
+return ProjectSummary(formatVersion: var_formatVersion, modelSchemaVersion: var_modelSchemaVersion, projectId: var_projectId, name: var_name, projectType: var_projectType, landAreaM2: var_landAreaM2, revision: var_revision, levels: var_levels, grids: var_grids, materials: var_materials, crossSections: var_crossSections, elements: var_elements); }
+
+@protected SnapCandidate sse_decode_snap_candidate(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var var_kind = sse_decode_String(deserializer);
+var var_label = sse_decode_String(deserializer);
+var var_xM = sse_decode_f_64(deserializer);
+var var_yM = sse_decode_f_64(deserializer);
+var var_zM = sse_decode_f_64(deserializer);
+var var_distanceM = sse_decode_f_64(deserializer);
+return SnapCandidate(kind: var_kind, label: var_label, xM: var_xM, yM: var_yM, zM: var_zM, distanceM: var_distanceM); }
+
+@protected SnapResult sse_decode_snap_result(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+var var_snapped = sse_decode_bool(deserializer);
+var var_kind = sse_decode_String(deserializer);
+var var_label = sse_decode_String(deserializer);
+var var_xM = sse_decode_f_64(deserializer);
+var var_yM = sse_decode_f_64(deserializer);
+var var_zM = sse_decode_f_64(deserializer);
+var var_candidates = sse_decode_list_snap_candidate(deserializer);
+return SnapResult(snapped: var_snapped, kind: var_kind, label: var_label, xM: var_xM, yM: var_yM, zM: var_zM, candidates: var_candidates); }
+
+@protected int sse_decode_u_32(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+return deserializer.buffer.getUint32(); }
+
+@protected BigInt sse_decode_u_64(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+return deserializer.buffer.getBigUint64(); }
+
+@protected int sse_decode_u_8(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+return deserializer.buffer.getUint8(); }
+
+@protected void sse_decode_unit(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+ }
+
+@protected int sse_decode_i_32(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+return deserializer.buffer.getInt32(); }
+
+@protected void sse_encode_String(String self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer); }
+
+@protected void sse_encode_bool(bool self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+serializer.buffer.putUint8(self ? 1 : 0); }
+
+@protected void sse_encode_box_autoadd_command_request(CommandRequest self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_command_request(self, serializer); }
+
+@protected void sse_encode_command_request(CommandRequest self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_String(self.command, serializer);
+sse_encode_String(self.name, serializer);
+sse_encode_String(self.elementId, serializer);
+sse_encode_String(self.levelId, serializer);
+sse_encode_String(self.baseLevelId, serializer);
+sse_encode_String(self.topLevelId, serializer);
+sse_encode_f_64(self.xM, serializer);
+sse_encode_f_64(self.yM, serializer);
+sse_encode_f_64(self.widthM, serializer);
+sse_encode_f_64(self.depthM, serializer);
+sse_encode_f_64(self.thicknessM, serializer);
+sse_encode_f_64(self.widthMm, serializer);
+sse_encode_f_64(self.depthMm, serializer);
+sse_encode_f_64(self.startXM, serializer);
+sse_encode_f_64(self.startYM, serializer);
+sse_encode_f_64(self.endXM, serializer);
+sse_encode_f_64(self.endYM, serializer);
+sse_encode_f_64(self.dxM, serializer);
+sse_encode_f_64(self.dyM, serializer);
+sse_encode_f_64(self.dzM, serializer);
+sse_encode_String(self.direction, serializer);
+sse_encode_f_64(self.offsetM, serializer);
+sse_encode_f_64(self.elevationM, serializer);
+sse_encode_String(self.foundationKind, serializer);
+sse_encode_list_prim_f_64_strict(self.points, serializer);
+ }
+
+@protected void sse_encode_command_result(CommandResult self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_bool(self.ok, serializer);
+sse_encode_String(self.message, serializer);
+sse_encode_String(self.label, serializer);
+sse_encode_u_64(self.revision, serializer);
+sse_encode_list_String(self.changedIds, serializer);
+sse_encode_bool(self.canUndo, serializer);
+sse_encode_bool(self.canRedo, serializer);
+ }
+
+@protected void sse_encode_f_64(double self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+serializer.buffer.putFloat64(self); }
+
+@protected void sse_encode_list_String(List<String> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_i_32(self.length, serializer);
+        for (final item in self) { sse_encode_String(item, serializer); } }
+
+@protected void sse_encode_list_prim_f_64_strict(Float64List self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_i_32(self.length, serializer);
+                    serializer.buffer.putFloat64List(self); }
+
+@protected void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_i_32(self.length, serializer);
+                    serializer.buffer.putUint8List(self is Uint8List ? self : Uint8List.fromList(self)); }
+
+@protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_i_32(self.length, serializer);
+                    serializer.buffer.putUint8List(self); }
+
+@protected void sse_encode_list_snap_candidate(List<SnapCandidate> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_i_32(self.length, serializer);
+        for (final item in self) { sse_encode_snap_candidate(item, serializer); } }
+
+@protected void sse_encode_model_summary(ModelSummary self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_u_32(self.schemaVersion, serializer);
+sse_encode_String(self.projectId, serializer);
+sse_encode_u_64(self.revision, serializer);
+sse_encode_u_32(self.levels, serializer);
+sse_encode_u_32(self.grids, serializer);
+sse_encode_u_32(self.materials, serializer);
+sse_encode_u_32(self.crossSections, serializer);
+sse_encode_u_32(self.elements, serializer);
+ }
+
+@protected void sse_encode_open_session_result(OpenSessionResult self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_bool(self.ok, serializer);
+sse_encode_String(self.message, serializer);
+sse_encode_String(self.sessionId, serializer);
+sse_encode_String(self.stateJson, serializer);
+ }
+
+@protected void sse_encode_project_summary(ProjectSummary self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_u_32(self.formatVersion, serializer);
+sse_encode_u_32(self.modelSchemaVersion, serializer);
+sse_encode_String(self.projectId, serializer);
+sse_encode_String(self.name, serializer);
+sse_encode_String(self.projectType, serializer);
+sse_encode_f_64(self.landAreaM2, serializer);
+sse_encode_u_64(self.revision, serializer);
+sse_encode_u_32(self.levels, serializer);
+sse_encode_u_32(self.grids, serializer);
+sse_encode_u_32(self.materials, serializer);
+sse_encode_u_32(self.crossSections, serializer);
+sse_encode_u_32(self.elements, serializer);
+ }
+
+@protected void sse_encode_snap_candidate(SnapCandidate self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_String(self.kind, serializer);
+sse_encode_String(self.label, serializer);
+sse_encode_f_64(self.xM, serializer);
+sse_encode_f_64(self.yM, serializer);
+sse_encode_f_64(self.zM, serializer);
+sse_encode_f_64(self.distanceM, serializer);
+ }
+
+@protected void sse_encode_snap_result(SnapResult self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+sse_encode_bool(self.snapped, serializer);
+sse_encode_String(self.kind, serializer);
+sse_encode_String(self.label, serializer);
+sse_encode_f_64(self.xM, serializer);
+sse_encode_f_64(self.yM, serializer);
+sse_encode_f_64(self.zM, serializer);
+sse_encode_list_snap_candidate(self.candidates, serializer);
+ }
+
+@protected void sse_encode_u_32(int self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+serializer.buffer.putUint32(self); }
+
+@protected void sse_encode_u_64(BigInt self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+serializer.buffer.putBigUint64(self); }
+
+@protected void sse_encode_u_8(int self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+serializer.buffer.putUint8(self); }
+
+@protected void sse_encode_unit(void self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+ }
+
+@protected void sse_encode_i_32(int self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
+serializer.buffer.putInt32(self); }
+                }
+                

@@ -5,256 +5,89 @@
 
 import 'frb_generated.dart';
 import 'model/summary.dart';
-
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
-
 import 'project.dart';
+import 'session.dart';
 
-// These functions are ignored because they are not marked as `pub`: `current_project`, `element_snapshot`, `point_snapshot`, `starter_project`, `workspace_snapshot`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
-/// M0 proof of concept, kept working verbatim: returns a status string that Flutter
-/// displays on screen.
-String getKernelStatus() => RustLib.instance.api.crateApiGetKernelStatus();
+            // These functions are ignored because they are not marked as `pub`: `parse_id`, `sessions`, `to_json`, `unknown_session`, `with_session`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `eq`, `fmt`
+
+
+            /// M0 proof of concept, kept working verbatim.
+String  getKernelStatus() => RustLib.instance.api.crateApiGetKernelStatus();
 
 /// Creates an empty engineering model in Rust and returns its summary.
+ModelSummary  createEmptyModel() => RustLib.instance.api.crateApiCreateEmptyModel();
+
+/// Creates a new empty project and returns its summary.
+ProjectSummary  createProject({required String name }) => RustLib.instance.api.crateApiCreateProject(name: name);
+
+/// Opens a modelling session: a real project with two levels, a grid, a concrete
+/// material and a column section, ready to be built in.
+OpenSessionResult  openSession({required String name , required String projectType , required double landAreaM2 }) => RustLib.instance.api.crateApiOpenSession(name: name, projectType: projectType, landAreaM2: landAreaM2);
+
+/// Reads a `.civilx` payload and opens it as a new session.
 ///
-/// The model is created (and dropped) inside the kernel: this call exists so the app
-/// can prove that the model core is reachable through the bridge, not to move model
-/// data into Flutter.
-ModelSummary createEmptyModel() =>
-    RustLib.instance.api.crateApiCreateEmptyModel();
+/// The engineering model is rebuilt from the file; the viewport is regenerated from
+/// the rebuilt model by the client.
+OpenSessionResult  loadSession({required List<int> data }) => RustLib.instance.api.crateApiLoadSession(data: data);
 
-/// Creates a new empty project with the given name.
-///
-/// The project contains an empty engineering model. This proves the project
-/// persistence layer is reachable through the bridge.
-ProjectSummary createProject({required String name}) =>
-    RustLib.instance.api.crateApiCreateProject(name: name);
+/// Closes a session and releases its model.
+bool  closeSession({required String sessionId }) => RustLib.instance.api.crateApiCloseSession(sessionId: sessionId);
 
-/// Creates a real starter project and returns a read-only rendering snapshot.
-///
-/// The starter contains levels, grids, a concrete material, a reusable section,
-/// four columns, four beams and one slab. It is intentionally created in the
-/// engineering model so the viewport is derived from model data from the first frame.
-WorkspaceSnapshot createWorkspaceSnapshot({
-  required String name,
-  required String projectType,
-  required double landAreaM2,
-}) => RustLib.instance.api.crateApiCreateWorkspaceSnapshot(
-  name: name,
-  projectType: projectType,
-  landAreaM2: landAreaM2,
-);
+/// The full state of a session, as JSON.
+String  sessionState({required String sessionId }) => RustLib.instance.api.crateApiSessionState(sessionId: sessionId);
 
-/// Adds a parametric column to the active project and returns a fresh derived snapshot.
-///
-/// The column is stored in the Rust engineering model and the Flutter viewport only
-/// receives the resulting projection.
-WorkspaceSnapshot addColumnToWorkspace({
-  required double xM,
-  required double yM,
-}) => RustLib.instance.api.crateApiAddColumnToWorkspace(xM: xM, yM: yM);
+/// Applies one engineering command to the model.
+CommandResult  executeCommand({required String sessionId , required CommandRequest request }) => RustLib.instance.api.crateApiExecuteCommand(sessionId: sessionId, request: request);
 
-/// Adds a parametric beam to the active project and returns a fresh derived snapshot.
-WorkspaceSnapshot addBeamToWorkspace({
-  required double startXM,
-  required double startYM,
-  required double endXM,
-  required double endYM,
-}) => RustLib.instance.api.crateApiAddBeamToWorkspace(
-  startXM: startXM,
-  startYM: startYM,
-  endXM: endXM,
-  endYM: endYM,
-);
+/// Takes the model back by one change.
+CommandResult  undoCommand({required String sessionId }) => RustLib.instance.api.crateApiUndoCommand(sessionId: sessionId);
 
-class ElementSnapshot {
-  final String id;
-  final String name;
-  final String category;
-  final double x;
-  final double y;
-  final double z;
-  final double topZ;
-  final double width;
-  final double depth;
-  final double thickness;
-  final PointSnapshot start;
-  final PointSnapshot end;
-  final List<PointSnapshot> boundary;
+/// Re-applies the last undone change.
+CommandResult  redoCommand({required String sessionId }) => RustLib.instance.api.crateApiRedoCommand(sessionId: sessionId);
 
-  const ElementSnapshot({
-    required this.id,
-    required this.name,
-    required this.category,
-    required this.x,
-    required this.y,
-    required this.z,
-    required this.topZ,
-    required this.width,
-    required this.depth,
-    required this.thickness,
-    required this.start,
-    required this.end,
-    required this.boundary,
-  });
+/// Switches the level new elements are created on.
+CommandResult  setActiveLevel({required String sessionId , required String levelId }) => RustLib.instance.api.crateApiSetActiveLevel(sessionId: sessionId, levelId: levelId);
 
-  @override
-  int get hashCode =>
-      id.hashCode ^
-      name.hashCode ^
-      category.hashCode ^
-      x.hashCode ^
-      y.hashCode ^
-      z.hashCode ^
-      topZ.hashCode ^
-      width.hashCode ^
-      depth.hashCode ^
-      thickness.hashCode ^
-      start.hashCode ^
-      end.hashCode ^
-      boundary.hashCode;
+/// Detail of one element, for the properties panel, as JSON.
+String  elementDetails({required String sessionId , required String elementId }) => RustLib.instance.api.crateApiElementDetails(sessionId: sessionId, elementId: elementId);
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ElementSnapshot &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          name == other.name &&
-          category == other.category &&
-          x == other.x &&
-          y == other.y &&
-          z == other.z &&
-          topZ == other.topZ &&
-          width == other.width &&
-          depth == other.depth &&
-          thickness == other.thickness &&
-          start == other.start &&
-          end == other.end &&
-          boundary == other.boundary;
-}
+/// Derived render data, as JSON. The renderer owns nothing here.
+String  renderData({required String sessionId }) => RustLib.instance.api.crateApiRenderData(sessionId: sessionId);
 
-class GridSnapshot {
-  final String id;
-  final String name;
-  final String direction;
-  final double offsetM;
+/// Finds the model point a touch, a pen or a mouse should land on.
+SnapResult  snapPoint({required String sessionId , required double xM , required double yM , required double zM , required double toleranceM }) => RustLib.instance.api.crateApiSnapPoint(sessionId: sessionId, xM: xM, yM: yM, zM: zM, toleranceM: toleranceM);
 
-  const GridSnapshot({
-    required this.id,
-    required this.name,
-    required this.direction,
-    required this.offsetM,
-  });
+/// Serializes a session to `.civilx` bytes.
+Uint8List  saveSession({required String sessionId }) => RustLib.instance.api.crateApiSaveSession(sessionId: sessionId);
 
-  @override
-  int get hashCode =>
-      id.hashCode ^ name.hashCode ^ direction.hashCode ^ offsetM.hashCode;
+            /// Result of opening or loading a session.
+class OpenSessionResult  {
+                final bool ok;
+final String message;
+final String sessionId;
+/// The full session state as JSON, so one round trip is enough to start working.
+final String stateJson;
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is GridSnapshot &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          name == other.name &&
-          direction == other.direction &&
-          offsetM == other.offsetM;
-}
+                const OpenSessionResult({required this.ok ,required this.message ,required this.sessionId ,required this.stateJson ,});
 
-class LevelSnapshot {
-  final String id;
-  final String name;
-  final double elevationM;
 
-  const LevelSnapshot({
-    required this.id,
-    required this.name,
-    required this.elevationM,
-  });
 
-  @override
-  int get hashCode => id.hashCode ^ name.hashCode ^ elevationM.hashCode;
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is LevelSnapshot &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          name == other.name &&
-          elevationM == other.elevationM;
-}
 
-class PointSnapshot {
-  final double x;
-  final double y;
-  final double z;
+        @override
+        int get hashCode => ok.hashCode^message.hashCode^sessionId.hashCode^stateJson.hashCode;
 
-  const PointSnapshot({required this.x, required this.y, required this.z});
 
-  @override
-  int get hashCode => x.hashCode ^ y.hashCode ^ z.hashCode;
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is PointSnapshot &&
-          runtimeType == other.runtimeType &&
-          x == other.x &&
-          y == other.y &&
-          z == other.z;
-}
+        @override
+        bool operator ==(Object other) =>
+            identical(this, other) ||
+            other is OpenSessionResult &&
+                runtimeType == other.runtimeType
+                && ok == other.ok&& message == other.message&& sessionId == other.sessionId&& stateJson == other.stateJson;
 
-/// Flat, render-oriented data derived from the engineering model.
-///
-/// This is a read-only projection for Flutter. The model and all mutations remain in
-/// Rust; the renderer never becomes the source of truth.
-class WorkspaceSnapshot {
-  final String projectId;
-  final String projectName;
-  final String projectType;
-  final double landAreaM2;
-  final BigInt revision;
-  final List<LevelSnapshot> levels;
-  final List<GridSnapshot> grids;
-  final List<ElementSnapshot> elements;
-
-  const WorkspaceSnapshot({
-    required this.projectId,
-    required this.projectName,
-    required this.projectType,
-    required this.landAreaM2,
-    required this.revision,
-    required this.levels,
-    required this.grids,
-    required this.elements,
-  });
-
-  @override
-  int get hashCode =>
-      projectId.hashCode ^
-      projectName.hashCode ^
-      projectType.hashCode ^
-      landAreaM2.hashCode ^
-      revision.hashCode ^
-      levels.hashCode ^
-      grids.hashCode ^
-      elements.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is WorkspaceSnapshot &&
-          runtimeType == other.runtimeType &&
-          projectId == other.projectId &&
-          projectName == other.projectName &&
-          projectType == other.projectType &&
-          landAreaM2 == other.landAreaM2 &&
-          revision == other.revision &&
-          levels == other.levels &&
-          grids == other.grids &&
-          elements == other.elements;
-}
+            }
+            

@@ -141,6 +141,58 @@ impl EngineeringModel {
         Ok(id)
     }
 
+    /// Removes an element, returning it so a command can restore it.
+    ///
+    /// This is *deletion* of engineering data, not hiding it in a view.
+    pub fn remove_element(&mut self, id: Uuid) -> Option<Element> {
+        let removed = self.elements.remove(&id);
+        if removed.is_some() {
+            self.revision += 1;
+        }
+        removed
+    }
+
+    /// Stores an edited element back under its own identity.
+    ///
+    /// This is the mutation path of the command layer for everything that changes
+    /// an existing element (moving it, re-attaching a level, changing a section).
+    /// It applies the same reference check as [`EngineeringModel::add_element`] and
+    /// bumps the revision, so no edit can slip past validation.
+    pub fn replace_element(&mut self, element: Element) -> Result<(), ModelError> {
+        let id = element.id();
+        if !self.elements.contains_key(&id) {
+            return Err(ModelError::MissingEntity { id });
+        }
+        if self.validation_mode == ValidationMode::Strict {
+            self.ensure_references_resolve(&element)?;
+        }
+        self.elements.insert(id, element);
+        self.revision += 1;
+        Ok(())
+    }
+
+    /// Removes a level, returning it so a command can restore it.
+    ///
+    /// Removing a level that elements still reference leaves the model valid but
+    /// dangling, which [`EngineeringModel::validate`] reports — it is never
+    /// silently repaired.
+    pub fn remove_level(&mut self, id: Uuid) -> Option<Level> {
+        let removed = self.levels.remove(&id);
+        if removed.is_some() {
+            self.revision += 1;
+        }
+        removed
+    }
+
+    /// Removes a grid line, returning it so a command can restore it.
+    pub fn remove_grid(&mut self, id: Uuid) -> Option<Grid> {
+        let removed = self.grids.remove(&id);
+        if removed.is_some() {
+            self.revision += 1;
+        }
+        removed
+    }
+
     // ------------------------------------------------------------------ lookup
 
     pub fn level(&self, id: Uuid) -> Option<&Level> {

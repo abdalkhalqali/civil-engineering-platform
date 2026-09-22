@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>منصة الهندسة المدنية — بيئة النمذجة</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark">🏛️</span>
+    <span>منصة الهندسة المدنية<small>نموذج هندسي بارامتري — النواة Rust</small></span>
+  </div>
+
+  <div class="group">
+    <button class="tbtn" id="btn-new">مشروع جديد</button>
+    <button class="tbtn" id="btn-open">فتح</button>
+    <button class="tbtn" id="btn-save">حفظ .civilx</button>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="group">
+    <button class="tbtn icon" id="btn-undo" title="تراجع (Ctrl+Z)">↩</button>
+    <button class="tbtn icon" id="btn-redo" title="إعادة (Ctrl+Shift+Z)">↪</button>
+    <button class="tbtn icon mobile-only" id="btn-panel" title="لوحة الخصائص">☰</button>
+  </div>
+</header>
+
+<div class="stage">
+  <canvas id="viewport"></canvas>
+
+  <section class="panel tools" id="tools">
+    <h2>الأدوات</h2>
+  </section>
+
+  <aside class="panel inspector" id="inspector"></aside>
+
+  <button id="grip" title="اسحب لتغيير المستوى العلوي">⇕</button>
+  <div id="griptip"></div>
+  <div id="hud"></div>
+</div>
+
+<footer class="statusbar">
+  <span>الأداة: <b id="st-tool">تحديد</b></span>
+  <span>المستوى النشط: <b id="st-level">—</b></span>
+  <span>الالتقاط: <b id="st-snap">—</b></span>
+  <span>الإحداثيات: <b id="st-cursor">0.00, 0.00</b></span>
+  <span>المراجعة: <b id="st-rev">0</b></span>
+  <span>الحالة: <b id="st-state" class="ok">جاهز</b></span>
+</footer>
+
+<div id="toast"></div>
+<input type="file" id="file-input" accept=".civilx,.json" hidden>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -4,244 +4,171 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'api.dart';
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
-
 import 'frb_generated.dart';
 import 'model/summary.dart';
-
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
-
 import 'project.dart';
+import 'session.dart';
 
-abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
-  RustLibApiImplPlatform({
-    required super.handler,
-    required super.wire,
-    required super.generalizedFrbRustBinding,
-    required super.portManager,
-  });
 
-  @protected
-  String dco_decode_String(dynamic raw);
 
-  @protected
-  ElementSnapshot dco_decode_element_snapshot(dynamic raw);
 
-  @protected
-  double dco_decode_f_64(dynamic raw);
+                abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
+                  RustLibApiImplPlatform({
+                    required super.handler,
+                    required super.wire,
+                    required super.generalizedFrbRustBinding,
+                    required super.portManager,
+                  });
 
-  @protected
-  GridSnapshot dco_decode_grid_snapshot(dynamic raw);
+                  
 
-  @protected
-  LevelSnapshot dco_decode_level_snapshot(dynamic raw);
+                  @protected String dco_decode_String(dynamic raw);
 
-  @protected
-  List<ElementSnapshot> dco_decode_list_element_snapshot(dynamic raw);
+@protected bool dco_decode_bool(dynamic raw);
 
-  @protected
-  List<GridSnapshot> dco_decode_list_grid_snapshot(dynamic raw);
+@protected CommandRequest dco_decode_box_autoadd_command_request(dynamic raw);
 
-  @protected
-  List<LevelSnapshot> dco_decode_list_level_snapshot(dynamic raw);
+@protected CommandRequest dco_decode_command_request(dynamic raw);
 
-  @protected
-  List<PointSnapshot> dco_decode_list_point_snapshot(dynamic raw);
+@protected CommandResult dco_decode_command_result(dynamic raw);
 
-  @protected
-  Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+@protected double dco_decode_f_64(dynamic raw);
 
-  @protected
-  ModelSummary dco_decode_model_summary(dynamic raw);
+@protected List<String> dco_decode_list_String(dynamic raw);
 
-  @protected
-  PointSnapshot dco_decode_point_snapshot(dynamic raw);
+@protected Float64List dco_decode_list_prim_f_64_strict(dynamic raw);
 
-  @protected
-  ProjectSummary dco_decode_project_summary(dynamic raw);
+@protected List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
 
-  @protected
-  int dco_decode_u_32(dynamic raw);
+@protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
-  @protected
-  BigInt dco_decode_u_64(dynamic raw);
+@protected List<SnapCandidate> dco_decode_list_snap_candidate(dynamic raw);
 
-  @protected
-  int dco_decode_u_8(dynamic raw);
+@protected ModelSummary dco_decode_model_summary(dynamic raw);
 
-  @protected
-  void dco_decode_unit(dynamic raw);
+@protected OpenSessionResult dco_decode_open_session_result(dynamic raw);
 
-  @protected
-  WorkspaceSnapshot dco_decode_workspace_snapshot(dynamic raw);
+@protected ProjectSummary dco_decode_project_summary(dynamic raw);
 
-  @protected
-  String sse_decode_String(SseDeserializer deserializer);
+@protected SnapCandidate dco_decode_snap_candidate(dynamic raw);
 
-  @protected
-  ElementSnapshot sse_decode_element_snapshot(SseDeserializer deserializer);
+@protected SnapResult dco_decode_snap_result(dynamic raw);
 
-  @protected
-  double sse_decode_f_64(SseDeserializer deserializer);
+@protected int dco_decode_u_32(dynamic raw);
 
-  @protected
-  GridSnapshot sse_decode_grid_snapshot(SseDeserializer deserializer);
+@protected BigInt dco_decode_u_64(dynamic raw);
 
-  @protected
-  LevelSnapshot sse_decode_level_snapshot(SseDeserializer deserializer);
+@protected int dco_decode_u_8(dynamic raw);
 
-  @protected
-  List<ElementSnapshot> sse_decode_list_element_snapshot(
-    SseDeserializer deserializer,
-  );
+@protected void dco_decode_unit(dynamic raw);
 
-  @protected
-  List<GridSnapshot> sse_decode_list_grid_snapshot(
-    SseDeserializer deserializer,
-  );
+@protected String sse_decode_String(SseDeserializer deserializer);
 
-  @protected
-  List<LevelSnapshot> sse_decode_list_level_snapshot(
-    SseDeserializer deserializer,
-  );
+@protected bool sse_decode_bool(SseDeserializer deserializer);
 
-  @protected
-  List<PointSnapshot> sse_decode_list_point_snapshot(
-    SseDeserializer deserializer,
-  );
+@protected CommandRequest sse_decode_box_autoadd_command_request(SseDeserializer deserializer);
 
-  @protected
-  Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+@protected CommandRequest sse_decode_command_request(SseDeserializer deserializer);
 
-  @protected
-  ModelSummary sse_decode_model_summary(SseDeserializer deserializer);
+@protected CommandResult sse_decode_command_result(SseDeserializer deserializer);
 
-  @protected
-  PointSnapshot sse_decode_point_snapshot(SseDeserializer deserializer);
+@protected double sse_decode_f_64(SseDeserializer deserializer);
 
-  @protected
-  ProjectSummary sse_decode_project_summary(SseDeserializer deserializer);
+@protected List<String> sse_decode_list_String(SseDeserializer deserializer);
 
-  @protected
-  int sse_decode_u_32(SseDeserializer deserializer);
+@protected Float64List sse_decode_list_prim_f_64_strict(SseDeserializer deserializer);
 
-  @protected
-  BigInt sse_decode_u_64(SseDeserializer deserializer);
+@protected List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
 
-  @protected
-  int sse_decode_u_8(SseDeserializer deserializer);
+@protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
-  @protected
-  void sse_decode_unit(SseDeserializer deserializer);
+@protected List<SnapCandidate> sse_decode_list_snap_candidate(SseDeserializer deserializer);
 
-  @protected
-  WorkspaceSnapshot sse_decode_workspace_snapshot(SseDeserializer deserializer);
+@protected ModelSummary sse_decode_model_summary(SseDeserializer deserializer);
 
-  @protected
-  int sse_decode_i_32(SseDeserializer deserializer);
+@protected OpenSessionResult sse_decode_open_session_result(SseDeserializer deserializer);
 
-  @protected
-  bool sse_decode_bool(SseDeserializer deserializer);
+@protected ProjectSummary sse_decode_project_summary(SseDeserializer deserializer);
 
-  @protected
-  void sse_encode_String(String self, SseSerializer serializer);
+@protected SnapCandidate sse_decode_snap_candidate(SseDeserializer deserializer);
 
-  @protected
-  void sse_encode_element_snapshot(
-    ElementSnapshot self,
-    SseSerializer serializer,
-  );
+@protected SnapResult sse_decode_snap_result(SseDeserializer deserializer);
 
-  @protected
-  void sse_encode_f_64(double self, SseSerializer serializer);
+@protected int sse_decode_u_32(SseDeserializer deserializer);
 
-  @protected
-  void sse_encode_grid_snapshot(GridSnapshot self, SseSerializer serializer);
+@protected BigInt sse_decode_u_64(SseDeserializer deserializer);
 
-  @protected
-  void sse_encode_level_snapshot(LevelSnapshot self, SseSerializer serializer);
+@protected int sse_decode_u_8(SseDeserializer deserializer);
 
-  @protected
-  void sse_encode_list_element_snapshot(
-    List<ElementSnapshot> self,
-    SseSerializer serializer,
-  );
+@protected void sse_decode_unit(SseDeserializer deserializer);
 
-  @protected
-  void sse_encode_list_grid_snapshot(
-    List<GridSnapshot> self,
-    SseSerializer serializer,
-  );
+@protected int sse_decode_i_32(SseDeserializer deserializer);
 
-  @protected
-  void sse_encode_list_level_snapshot(
-    List<LevelSnapshot> self,
-    SseSerializer serializer,
-  );
+@protected void sse_encode_String(String self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_list_point_snapshot(
-    List<PointSnapshot> self,
-    SseSerializer serializer,
-  );
+@protected void sse_encode_bool(bool self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_list_prim_u_8_strict(
-    Uint8List self,
-    SseSerializer serializer,
-  );
+@protected void sse_encode_box_autoadd_command_request(CommandRequest self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_model_summary(ModelSummary self, SseSerializer serializer);
+@protected void sse_encode_command_request(CommandRequest self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_point_snapshot(PointSnapshot self, SseSerializer serializer);
+@protected void sse_encode_command_result(CommandResult self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_project_summary(
-    ProjectSummary self,
-    SseSerializer serializer,
-  );
+@protected void sse_encode_f_64(double self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_u_32(int self, SseSerializer serializer);
+@protected void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_u_64(BigInt self, SseSerializer serializer);
+@protected void sse_encode_list_prim_f_64_strict(Float64List self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_u_8(int self, SseSerializer serializer);
+@protected void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_unit(void self, SseSerializer serializer);
+@protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_workspace_snapshot(
-    WorkspaceSnapshot self,
-    SseSerializer serializer,
-  );
+@protected void sse_encode_list_snap_candidate(List<SnapCandidate> self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_i_32(int self, SseSerializer serializer);
+@protected void sse_encode_model_summary(ModelSummary self, SseSerializer serializer);
 
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer);
-}
+@protected void sse_encode_open_session_result(OpenSessionResult self, SseSerializer serializer);
+
+@protected void sse_encode_project_summary(ProjectSummary self, SseSerializer serializer);
+
+@protected void sse_encode_snap_candidate(SnapCandidate self, SseSerializer serializer);
+
+@protected void sse_encode_snap_result(SnapResult self, SseSerializer serializer);
+
+@protected void sse_encode_u_32(int self, SseSerializer serializer);
+
+@protected void sse_encode_u_64(BigInt self, SseSerializer serializer);
+
+@protected void sse_encode_u_8(int self, SseSerializer serializer);
+
+@protected void sse_encode_unit(void self, SseSerializer serializer);
+
+@protected void sse_encode_i_32(int self, SseSerializer serializer);
+                }
+                
+
 
 // Section: wire_class
 
-class RustLibWire implements BaseWire {
-  factory RustLibWire.fromExternalLibrary(ExternalLibrary lib) =>
-      RustLibWire(lib.ffiDynamicLibrary);
 
-  /// Holds the symbol lookup function.
-  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-  _lookup;
+        class RustLibWire implements BaseWire {
 
-  /// The symbols are looked up in [dynamicLibrary].
-  RustLibWire(ffi.DynamicLibrary dynamicLibrary)
-    : _lookup = dynamicLibrary.lookup;
-}
+            factory RustLibWire.fromExternalLibrary(ExternalLibrary lib) =>
+              RustLibWire(lib.ffiDynamicLibrary);
+        
+            /// Holds the symbol lookup function.
+            final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+                _lookup;
+  
+            /// The symbols are looked up in [dynamicLibrary].
+            RustLibWire(ffi.DynamicLibrary dynamicLibrary)
+                : _lookup = dynamicLibrary.lookup;
+
+            
+        }
+        

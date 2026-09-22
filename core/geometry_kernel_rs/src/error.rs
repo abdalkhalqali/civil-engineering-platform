@@ -49,6 +49,13 @@ pub enum ModelError {
     },
     /// A boundary was built from an unusable set of points.
     InvalidBoundary { reason: String },
+    /// The entity a command names is not part of the model.
+    MissingEntity { id: Uuid },
+    /// A command was asked to do something the element kind cannot do, for example
+    /// changing the top level of a slab.
+    UnsupportedElementKind { id: Uuid, reason: String },
+    /// An extent (a height, an axis, a size) is not usable as engineering data.
+    InvalidExtent { reason: String },
 }
 
 impl fmt::Display for ModelError {
@@ -67,6 +74,15 @@ impl fmt::Display for ModelError {
             ),
             ModelError::InvalidBoundary { reason } => {
                 write!(f, "invalid boundary: {reason}")
+            }
+            ModelError::MissingEntity { id } => {
+                write!(f, "entity {id} does not exist in the model")
+            }
+            ModelError::UnsupportedElementKind { id, reason } => {
+                write!(f, "element {id} cannot be changed that way: {reason}")
+            }
+            ModelError::InvalidExtent { reason } => {
+                write!(f, "invalid extent: {reason}")
             }
         }
     }

@@ -8,9 +8,22 @@ edition = "2021"
 # rlib: lets `cargo test` build the integration test suite against the public API.
 crate-type = ["cdylib", "staticlib", "rlib"]
 
+[features]
+# The Flutter bridge is the default boundary of the kernel.
+default = ["flutter-bridge"]
+flutter-bridge = ["dep:flutter_rust_bridge"]
+# The browser boundary. It exposes the same ModelSession and the same command
+# contract through wasm-bindgen, so the web preview drives the *same* engineering
+# model instead of a second one written in JavaScript.
+wasm = ["dep:wasm-bindgen"]
+
 [dependencies]
-# Bridge to Flutter (flutter_rust_bridge v2).
-flutter_rust_bridge = "=2.13.0"
+# Bridge to Flutter (flutter_rust_bridge v2). Optional so the WebAssembly build
+# does not have to carry it, but enabled by default.
+flutter_rust_bridge = { version = "=2.13.0", optional = true }
+
+# Bridge to the browser (wasm-bindgen). Only used by the `wasm` feature.
+wasm-bindgen = { version = "=0.2.128", optional = true }
 
 # Data-model dependencies of the M0 foundation. They are not used by the
 # bridge proof of concept itself and are kept for the upcoming kernel work.
@@ -18,8 +31,9 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 uuid = { version = "1.8", features = ["v4", "serde", "js"] }
 
-# Project persistence timestamps.
-chrono = { version = "0.4", features = ["serde"] }
+# Project persistence timestamps. `wasmbind` makes them work in the browser
+# instead of panicking on a missing system clock.
+chrono = { version = "0.4", features = ["serde", "wasmbind"] }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

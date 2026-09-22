@@ -4,96 +4,61 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import 'frb_generated.dart';
-
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-/// A flat, FFI-friendly snapshot of the project.
+
+            
+
+            
+
+            /// A flat, FFI-friendly snapshot of the project.
 ///
 /// This type is deliberately made of primitives only — no domain model data
 /// crosses the FFI boundary in this form. It exists so Flutter can display a
 /// project overview without receiving the full model.
-class ProjectSummary {
-  /// File format version.
-  final int formatVersion;
+class ProjectSummary  {
+                /// File format version.
+final int formatVersion;
+/// Engineering model schema version.
+final int modelSchemaVersion;
+/// Project id as a hyphenated UUID string.
+final String projectId;
+/// Human-readable project name.
+final String name;
+/// High-level project classification.
+final String projectType;
+/// Estimated site area in square metres.
+final double landAreaM2;
+/// Number of accepted mutations.
+final BigInt revision;
+/// Number of levels.
+final int levels;
+/// Number of grid lines.
+final int grids;
+/// Number of materials.
+final int materials;
+/// Number of cross sections.
+final int crossSections;
+/// Number of physical elements.
+final int elements;
 
-  /// Engineering model schema version.
-  final int modelSchemaVersion;
+                const ProjectSummary({required this.formatVersion ,required this.modelSchemaVersion ,required this.projectId ,required this.name ,required this.projectType ,required this.landAreaM2 ,required this.revision ,required this.levels ,required this.grids ,required this.materials ,required this.crossSections ,required this.elements ,});
 
-  /// Project id as a hyphenated UUID string.
-  final String projectId;
 
-  /// Human-readable project name.
-  final String name;
 
-  /// High-level project classification.
-  final String projectType;
 
-  /// Estimated site area in square metres.
-  final double landAreaM2;
 
-  /// Number of accepted mutations.
-  final BigInt revision;
+        @override
+        int get hashCode => formatVersion.hashCode^modelSchemaVersion.hashCode^projectId.hashCode^name.hashCode^projectType.hashCode^landAreaM2.hashCode^revision.hashCode^levels.hashCode^grids.hashCode^materials.hashCode^crossSections.hashCode^elements.hashCode;
 
-  /// Number of levels.
-  final int levels;
 
-  /// Number of grid lines.
-  final int grids;
 
-  /// Number of materials.
-  final int materials;
+        @override
+        bool operator ==(Object other) =>
+            identical(this, other) ||
+            other is ProjectSummary &&
+                runtimeType == other.runtimeType
+                && formatVersion == other.formatVersion&& modelSchemaVersion == other.modelSchemaVersion&& projectId == other.projectId&& name == other.name&& projectType == other.projectType&& landAreaM2 == other.landAreaM2&& revision == other.revision&& levels == other.levels&& grids == other.grids&& materials == other.materials&& crossSections == other.crossSections&& elements == other.elements;
 
-  /// Number of cross sections.
-  final int crossSections;
-
-  /// Number of physical elements.
-  final int elements;
-
-  const ProjectSummary({
-    required this.formatVersion,
-    required this.modelSchemaVersion,
-    required this.projectId,
-    required this.name,
-    required this.projectType,
-    required this.landAreaM2,
-    required this.revision,
-    required this.levels,
-    required this.grids,
-    required this.materials,
-    required this.crossSections,
-    required this.elements,
-  });
-
-  @override
-  int get hashCode =>
-      formatVersion.hashCode ^
-      modelSchemaVersion.hashCode ^
-      projectId.hashCode ^
-      name.hashCode ^
-      projectType.hashCode ^
-      landAreaM2.hashCode ^
-      revision.hashCode ^
-      levels.hashCode ^
-      grids.hashCode ^
-      materials.hashCode ^
-      crossSections.hashCode ^
-      elements.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ProjectSummary &&
-          runtimeType == other.runtimeType &&
-          formatVersion == other.formatVersion &&
-          modelSchemaVersion == other.modelSchemaVersion &&
-          projectId == other.projectId &&
-          name == other.name &&
-          projectType == other.projectType &&
-          landAreaM2 == other.landAreaM2 &&
-          revision == other.revision &&
-          levels == other.levels &&
-          grids == other.grids &&
-          materials == other.materials &&
-          crossSections == other.crossSections &&
-          elements == other.elements;
-}
+            }
+            
